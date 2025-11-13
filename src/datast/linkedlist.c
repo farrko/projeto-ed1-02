@@ -3,42 +3,11 @@
 
 #include "linkedlist.h"
 
-struct node_t {
-  void *value;
-  void (*destructor)(void *);
-  struct node_t *next;
-  struct node_t *prev;
-};
-
 struct llist_t {
   node_t *head;
   node_t *tail;
   size_t length;
 };
-
-node_t *node_init(void *value, void (*destructor)(void *)) {
-  node_t *node = malloc(sizeof(node_t));
-  if (node == NULL) {
-    printf("Erro na alocação de memória.\n");
-    exit(1);
-  }
-
-  node->value = value;
-  node->destructor = destructor;
-  node->prev = NULL;
-  node->next = NULL;
-
-  return node;
-}
-
-void *node_getvalue(node_t *node) {
-  return node->value;
-}
-
-void node_destroy(node_t *node) {
-  node->destructor(node->value);
-  free(node);
-}
 
 llist_t *llist_init() {
   llist_t *llist = malloc(sizeof(llist_t));
@@ -56,8 +25,9 @@ llist_t *llist_init() {
 
 void llist_destroy(llist_t *llist) {
   node_t *current = llist->head;
+
   for (size_t i = 0; i < llist->length; i++) {
-    node_t *next = current->next;
+    node_t *next = node_get_rpt(current);
 
     node_destroy(current);
 
@@ -84,7 +54,7 @@ node_t *llist_getat_index(llist_t *llist, size_t index) {
 
   node_t *current = llist->head;
   for (size_t i = 0; i < index; i++) {
-    current = current->next;
+    current = node_get_rpt(current);
   }
 
   return current;
@@ -106,9 +76,9 @@ node_t *llist_popat_index(llist_t *llist, size_t index) {
 
   if (!index) {
     node_t *current = llist->head;
-    node_t *next = current->next;
+    node_t *next = node_get_rpt(current);
 
-    next->prev = NULL;
+    node_set_lpt(next, NULL);
     llist->head = next;
 
     llist->length--;
@@ -118,9 +88,9 @@ node_t *llist_popat_index(llist_t *llist, size_t index) {
 
   if (index == llist->length - 1) {
     node_t *current = llist->tail;
-    node_t *prev = current->prev;
+    node_t *prev = node_get_lpt(current);
 
-    prev->next = NULL;
+    node_set_rpt(prev, NULL);
     llist->tail = prev;
 
     llist->length--;
@@ -129,11 +99,11 @@ node_t *llist_popat_index(llist_t *llist, size_t index) {
   }
 
   node_t *current = llist_getat_index(llist, index);
-  node_t *prev = current->prev;
-  node_t *next = current->next;
+  node_t *prev = node_get_lpt(current);
+  node_t *next = node_get_rpt(current);
 
-  prev->next = next;
-  next->prev = prev;
+  node_set_rpt(prev, next);
+  node_set_lpt(next, prev);
 
   llist->length--;
 
@@ -153,8 +123,8 @@ node_t *llist_popat_end(llist_t *llist) {
 void llist_insertat_index(llist_t *llist, node_t *node, size_t index) {
   if (index > llist->length) return;
 
-  node->next = NULL;
-  node->prev = NULL;
+  node_set_lpt(node, NULL);
+  node_set_rpt(node, NULL);
 
   if (!llist->length) {
     llist->head = node;
@@ -167,8 +137,8 @@ void llist_insertat_index(llist_t *llist, node_t *node, size_t index) {
 
   if (!index) {
     node_t *head = llist->head;
-    node->next = head;
-    head->prev = node;
+    node_set_rpt(node, head);
+    node_set_lpt(head, node);
     llist->head = node;
 
     llist->length++;
@@ -178,8 +148,8 @@ void llist_insertat_index(llist_t *llist, node_t *node, size_t index) {
 
   if (index == llist->length) {
     node_t *tail = llist->tail;
-    tail->next = node;
-    node->prev = tail;
+    node_set_rpt(tail, node);
+    node_set_lpt(node, tail);
     llist->tail = node;
 
     llist->length++;
@@ -189,15 +159,15 @@ void llist_insertat_index(llist_t *llist, node_t *node, size_t index) {
 
   node_t *current = llist->head;
   for (size_t i = 0; i < index; i++) {
-    current = current->next;
+    current = node_get_rpt(current);
   }
 
-  node_t *prev = current->prev;
+  node_t *prev = node_get_lpt(current);
 
-  prev->next = node;
-  node->prev = prev;
-  node->next = current;
-  current->prev = node;
+  node_set_rpt(prev, node);
+  node_set_lpt(node, prev);
+  node_set_rpt(node, current);
+  node_set_lpt(current, node);
 
   llist->length++;
 }
@@ -212,8 +182,7 @@ void llist_insertat_end(llist_t *llist, node_t *node) {
 
 void llist_destroyat(llist_t *llist, size_t index) {
   node_t *node = llist_popat_index(llist, index);
-  if (node == NULL)
-    return;
+  if (node == NULL) return;
 
   node_destroy(node);
 }
