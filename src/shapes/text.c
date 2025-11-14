@@ -26,13 +26,34 @@ text_t *text_init(size_t id, double x, double y, char *anchor, char *color, char
   text->id = id;
   text->x = x;
   text->y = y;
-  text->anchor = anchor;
-  text->color = color;
-  text->border_color = border_color;
-  text->ffam = ffam;
-  text->fweight = fweight;
-  text->fsize = fsize;
-  text->content = content;
+
+  char *_anchor = malloc(sizeof(anchor) + 1);
+  strcpy(_anchor, anchor);
+  text->anchor = _anchor;
+
+  char *_color = malloc(sizeof(color) + 1);
+  strcpy(_color, color);
+  text->color = _color;
+
+  char *_border_color = malloc(sizeof(border_color) + 1);
+  strcpy(_border_color, border_color);
+  text->border_color = _border_color;
+
+  char *_ffam = malloc(sizeof(ffam) + 1);
+  strcpy(_ffam, ffam);
+  text->ffam = _ffam;
+
+  char *_fweight = malloc(sizeof(fweight) + 1);
+  strcpy(_fweight, fweight);
+  text->fweight = _fweight;
+
+  char *_fsize = malloc(sizeof(fsize) + 1);
+  strcpy(_fsize, fsize);
+  text->fsize = _fsize;
+
+  char *_content = malloc(sizeof(content) + 1);
+  strcpy(_content, content);
+  text->content = _content;
 
   return text;
 }
@@ -60,37 +81,59 @@ void text_set_y(text_t *text, double y) {
 }
 
 void text_set_anchor(text_t *text, char *anchor) {
-  text->anchor = anchor;
+  if (text->anchor != NULL) free(anchor); 
+ 
+  char *_anchor = malloc(sizeof(anchor) + 1);
+  strcpy(_anchor, anchor);
+  text->anchor = _anchor;
 }
 
 void text_set_color(text_t *text, char *color) {
   if (text->color != NULL) free(text->color);
-  text->color = color;
+
+  char *_color = malloc(sizeof(color) + 1);
+  strcpy(_color, color);
+  text->color = _color;
 }
 
 void text_set_border_color(text_t *text, char *border_color) {
   if (text->border_color != NULL) free(text->border_color);
-  text->border_color = border_color;
+
+  char *_border_color = malloc(sizeof(border_color) + 1);
+  strcpy(_border_color, border_color);
+  text->border_color = _border_color;
 }
 
 void text_set_ffam(text_t *text, char *ffam) {
   if (text->ffam != NULL) free(text->ffam);
-  text->ffam = ffam;
+
+  char *_ffam = malloc(sizeof(ffam) + 1);
+  strcpy(_ffam, ffam);
+  text->ffam = _ffam;
 }
 
 void text_set_fweight(text_t *text, char *fweight) {
   if (text->fweight != NULL) free(text->fweight);
-  text->fweight = fweight;
+
+  char *_fweight = malloc(sizeof(fweight) + 1);
+  strcpy(_fweight, fweight);
+  text->fweight = _fweight;
 }
 
 void text_set_fsize(text_t *text, char *fsize) {
   if (text->fsize != NULL) free(text->fsize);
-  text->fsize = fsize;
+
+  char *_fsize = malloc(sizeof(fsize) + 1);
+  strcpy(_fsize, fsize);
+  text->fsize = _fsize;
 }
 
 void text_set_content(text_t *text, char *content) {
   if (text->content != NULL) free(text->content);
-  text->content = content;
+
+  char *_content = malloc(sizeof(content) + 1);
+  strcpy(_content, content);
+  text->content = _content;
 }
 
 size_t text_get_id(text_t *text) {
@@ -133,34 +176,8 @@ char *text_get_content(text_t *text) {
   return text->content;
 }
 
-double text_get_area(text_t *text) {
-  size_t len = strlen(text->content);
-  return 20.0 * len;
-}
-
 text_t *text_clone(text_t *text, size_t id) {
-  char *anchor = malloc(strlen(text->anchor) + 1);
-  char *color = malloc(8);
-  char *border_color = malloc(8);
-  char *ffam = malloc(strlen(text->ffam) + 1);
-  char *fweight = malloc(strlen(text->fweight) + 1);
-  char *fsize = malloc(strlen(text->fsize) + 1);
-  char *content = malloc(128);
-
-  if (!anchor || !color || !border_color || !ffam || !fweight || !fsize || !content) {
-      printf("Erro na alocação de memória.\n");
-      exit(1);
-  }
-
-  strcpy(anchor, text->anchor);
-  strcpy(color, text->color);
-  strcpy(border_color, text->border_color);
-  strcpy(ffam, text->ffam);
-  strcpy(fweight, text->fweight);
-  strcpy(fsize, text->fsize);
-  strcpy(content, text->content);
-
-  return text_init(id, text->x, text->y, anchor, color, border_color, ffam, fweight, fsize, content);
+  return text_init(id, text->x, text->y, text->anchor, text->color, text->border_color, text->ffam, text->fweight, text->fsize, text->content);
 }
 
 line_t *text_line_collision(text_t *text) {
@@ -186,12 +203,4 @@ line_t *text_line_collision(text_t *text) {
 
   line_t *line = line_init(0, x1, text->y, x2, text->y, NULL);
   return line;
-}
-
-void text_swap_colors(text_t *text) {
-  char *color = text->color;
-  char *border_color = text->border_color;
-
-  text->color = border_color;
-  text->border_color = color;
 }

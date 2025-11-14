@@ -55,8 +55,8 @@ int main(int argc, char **argv) {
     sprintf(full_geopath, "%s/%s", base_dir, geopath);
   } else strcpy(full_geopath, geopath);
 
-  queue_t *ground = queue_init();
-  size_t highest_id = geo_processing(full_geopath, ground);
+  llist_t *shapes_list = llist_init();
+  size_t highest_id = geo_processing(full_geopath, shapes_list);
   
   char *geosvg_path = malloc(128);
   sprintf(geosvg_path, "%s/%s.svg", out_dir, geo_name);

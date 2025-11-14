@@ -116,21 +116,6 @@ double shape_get_y(shape_t *shape) {
   }
 }
 
-char *shape_get_color(shape_t *shape) {
-  switch (shape->shapetype) {
-    case CIRCLE: 
-      return circle_get_color(shape_as_circle(shape));
-    case RECTANGLE:
-      return rect_get_color(shape_as_rectangle(shape));
-    case LINE:
-      return line_get_color(shape_as_line(shape));
-    case TEXT:
-      return text_get_color(shape_as_text(shape));
-    default:
-      return NULL;
-  }
-}
-
 void shape_move(shape_t *shape, double lx, double ly, double dx, double dy) {
   switch (shape_get_type(shape)) {
     case CIRCLE: {
@@ -164,35 +149,20 @@ void shape_move(shape_t *shape, double lx, double ly, double dx, double dy) {
   }
 }
 
-void shape_set_border_color(shape_t *shape, char *border_color) { 
+void shape_set_color(shape_t *shape, char *color) { 
   switch (shape->shapetype) {
     case CIRCLE:
-      circle_set_border_color(shape_as_circle(shape), border_color);
+      circle_set_color(shape_as_circle(shape), color);
       break;
     case RECTANGLE:
-      rect_set_border_color(shape_as_rectangle(shape), border_color);
+      rect_set_color(shape_as_rectangle(shape), color);
       break;
     case TEXT:
-      text_set_border_color(shape_as_text(shape), border_color);
+      text_set_color(shape_as_text(shape), color);
       break;
     case LINE:
-      line_set_color(shape_as_line(shape), border_color);
+      line_set_color(shape_as_line(shape), color);
       break;
-  }
-}
-
-double shape_get_area(shape_t *shape) {
-  switch(shape->shapetype) {
-    case CIRCLE:
-      return circle_get_area((circle_t *) shape->shape);
-    case RECTANGLE:
-      return rect_get_area((rectangle_t *) shape->shape);
-    case LINE:
-      return line_get_area((line_t *) shape->shape);
-    case TEXT:
-      return text_get_area((text_t *) shape->shape);
-    default:
-      return 0.0;
   }
 }
 
@@ -208,39 +178,6 @@ shape_t *shape_clone(shape_t *shape, size_t id) {
       return shape_init(TEXT, text_clone(shape_as_text(shape), id));
     default: 
       return NULL;
-  }
-}
-
-// Auxiliar para calcular a cor complementar
-char *calc_complementary(char *color) {
-  int r, g, b;
-  sscanf(color, "#%2x%2x%2x", &r, &g, &b);
-
-  r = 255 - r;
-  g = 255 - g;
-  b = 255 - b;
-
-  char *res = malloc(8);
-  if (res == NULL) {
-    printf("Erro na alocação de memória.\n");
-    exit(1);
-  }
-  
-  sprintf(res, "#%02x%02x%02x", r, g, b);
-  return res;
-}
-
-void shape_swap_colors(shape_t *shape) {
-  switch (shape->shapetype) {
-    case CIRCLE: return circle_swap_colors(shape_as_circle(shape));
-    case RECTANGLE: return rect_swap_colors(shape_as_rectangle(shape));
-    case TEXT: return text_swap_colors(shape_as_text(shape));
-    case LINE: {
-      line_t *line = shape_as_line(shape);
-      char *compcolor = calc_complementary(line_get_color(line));
-      line_set_color(line, compcolor);
-      return;
-    }
   }
 }
 

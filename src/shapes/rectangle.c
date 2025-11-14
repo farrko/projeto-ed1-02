@@ -24,8 +24,15 @@ rectangle_t *rect_init(size_t id, double x, double y, double width, double heigh
   rectangle->y = y;
   rectangle->width = width;
   rectangle->height = height;
-  rectangle->color = color;
-  rectangle->border_color = border_color;
+
+
+  char *_color = malloc(sizeof(color) + 1);
+  strcpy(_color, color);
+  rectangle->color = _color;
+
+  char *_border_color = malloc(sizeof(border_color) + 1);
+  strcpy(_border_color, border_color);
+  rectangle->border_color = _border_color;
 
   return rectangle;
 }
@@ -57,12 +64,18 @@ void rect_set_height(rectangle_t *rect, double height) {
 
 void rect_set_color(rectangle_t *rect, char *color) {
   if (rect->color != NULL) free(rect->color);
-  rect->color = color;
+ 
+  char *_color = malloc(sizeof(color) + 1);
+  strcpy(_color, color);
+  rect->color = _color;
 }
 
 void rect_set_border_color(rectangle_t *rect, char *border_color) {
   if (rect->border_color != NULL) free(rect->border_color);
-  rect->border_color = border_color;
+ 
+  char *_border_color = malloc(sizeof(border_color) + 1);
+  strcpy(_border_color, border_color);
+  rect->border_color = _border_color;
 }
 
 size_t rect_get_id(rectangle_t *rect) {
@@ -82,7 +95,6 @@ double rect_get_width(rectangle_t *rect) {
 }
 
 double rect_get_height(rectangle_t *rect) {
-  if (rect == NULL) return 0;
   return rect->height;
 }
 
@@ -94,33 +106,6 @@ char *rect_get_border_color(rectangle_t *rect) {
   return rect->border_color;
 }
 
-double rect_get_area(rectangle_t *rect) {
-  return rect->width * rect->height;
-}
-
 rectangle_t *rect_clone(rectangle_t *rect, size_t id) {
-  char *color = malloc(8);
-  if (color == NULL) {
-    printf("Erro na alocação de memória.\n");
-    exit(1);
-  }
-
-  char *border_color = malloc(8);
-  if (border_color == NULL) {
-    printf("Erro na alocação de memória.\n");
-    exit(1);
-  }
-
-  strcpy(color, rect->color);
-  strcpy(border_color, rect->border_color);
-
-  return rect_init(id, rect->x, rect->y, rect->width, rect->height, color, border_color);
+  return rect_init(id, rect->x, rect->y, rect->width, rect->height, rect->color, rect->border_color);
 }
-
-void rect_swap_colors(rectangle_t *rect) {
-  char *color = rect->color;
-  char *border_color = rect->border_color;
-
-  rect->color = border_color;
-  rect->border_color = color;
-} 

@@ -24,8 +24,14 @@ circle_t *circle_init(size_t id, double x, double y, double radius, char *color,
   circle->x = x;
   circle->y = y;
   circle->radius = radius;
-  circle->color = color;
-  circle->border_color = border_color;
+
+  char *_color = malloc(sizeof(color) + 1);
+  strcpy(_color, color);
+  circle->color = _color;
+
+  char *_border_color = malloc(sizeof(border_color) + 1);
+  strcpy(_border_color, border_color);
+  circle->border_color = _border_color;
 
   return circle;
 }
@@ -53,12 +59,18 @@ void circle_set_radius(circle_t *circle, double radius) {
 
 void circle_set_color(circle_t *circle, char *color) {
   if (circle->color != NULL) free(circle->color);
-  circle->color = color;
+ 
+  char *_color = malloc(sizeof(color) + 1);
+  strcpy(_color, color);
+  circle->color = _color;
 }
 
 void circle_set_border_color(circle_t *circle, char *border_color) {
   if (circle->border_color != NULL) free(circle->border_color);
-  circle->border_color = border_color;
+ 
+  char *_border_color = malloc(sizeof(border_color) + 1);
+  strcpy(_border_color, border_color);
+  circle->border_color = _border_color;
 }
 
 size_t circle_get_id(circle_t *circle) {
@@ -90,28 +102,5 @@ double circle_get_area(circle_t *circle) {
 }
 
 circle_t *circle_clone(circle_t *circle, size_t id) {
-  char *color = malloc(8);
-  if (color == NULL) {
-    printf("Erro na alocação de memória.\n");
-    exit(1);
-  }
-
-  char *border_color = malloc(8);
-  if (border_color == NULL) {
-    printf("Erro na alocação de memória.\n");
-    exit(1);
-  }
-
-  strcpy(color, circle->color);
-  strcpy(border_color, circle->border_color);
-
-  return circle_init(id, circle->x, circle->y, circle->radius, color, border_color);
-}
-
-void circle_swap_colors(circle_t *circle) {
-  char *color = circle->color;
-  char *border_color = circle->border_color;
-
-  circle->color = border_color;
-  circle->border_color = color;
+  return circle_init(id, circle->x, circle->y, circle->radius, circle->color, circle->border_color);
 }

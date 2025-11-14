@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <math.h>
 #include <string.h>
 
 #include "line.h"
@@ -24,7 +23,10 @@ line_t *line_init(size_t id, double x1, double y1, double x2, double y2, char *c
   line->y1 = y1;
   line->x2 = x2;
   line->y2 = y2;
-  line->color = color;
+ 
+  char *_color = malloc(sizeof(color) + 1);
+  strcpy(_color, color);
+  line->color = _color;
 
   return line;
 }
@@ -53,7 +55,10 @@ void line_set_y2(line_t *line, double y2) {
 
 void line_set_color(line_t *line, char *color) {
   if (line->color != NULL) free(line->color);
-  line->color = color;
+  
+  char *_color = malloc(sizeof(color) + 1);
+  strcpy(_color, color);
+  line->color = _color;
 }
 
 size_t line_get_id(line_t *line) {
@@ -80,23 +85,6 @@ char *line_get_color(line_t *line) {
   return line->color;
 }
 
-double line_get_area(line_t *line) {
-  double x1 = line->x1;
-  double x2 = line->x2;
-  double y1 = line->y1;
-  double y2 = line->y2;
-
-  return 2 * (sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2)));
-}
-
 line_t *line_clone(line_t *line, size_t id) {
-  char *color = malloc(8);
-  if (color == NULL) {
-      printf("Erro na alocação de memória.\n");
-      exit(1);
-  }
-
-  strcpy(color, line->color);
-
-  return line_init(id, line->x1, line->y1, line->x2, line->y2, color);
+  return line_init(id, line->x1, line->y1, line->x2, line->y2, line->color);
 }

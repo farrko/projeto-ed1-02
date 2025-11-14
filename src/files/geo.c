@@ -5,9 +5,7 @@
 
 #include "geo.h"
 
-size_t geo_processing(char *path, queue_t *queue) {
-  if (queue == NULL) return 0;
-
+size_t geo_processing(char *path, llist_t *shapes_list) {
   FILE *geo = fopen(path, "r");
   if (geo == NULL) {
     printf("Erro na leitura do arquivo .geo.\n");
