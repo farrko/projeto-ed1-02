@@ -2,6 +2,7 @@
 #define NODES_H
 
 typedef struct node_t node_t;
+typedef void (*destructor)(void *);
 
 /** @brief    Inicialização de um node.
   *
@@ -19,6 +20,7 @@ void node_set_lpt(node_t *node, node_t *lpt);
 void node_set_rpt(node_t *node, node_t *rpt);
 
 void *node_get_value(node_t *node);
+destructor node_get_destructor(node_t *node);
 node_t *node_get_lpt(node_t *node);
 node_t *node_get_rpt(node_t *node);
 

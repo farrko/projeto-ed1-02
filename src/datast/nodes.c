@@ -5,7 +5,7 @@
 
 struct node_t {
   void *value;
-  void (*destructor)(void *);
+  destructor destructor;
   struct node_t *lpt;
   struct node_t *rpt;
 };
@@ -47,6 +47,10 @@ void *node_get_value(node_t *node) {
   return node->value;
 }
 
+destructor node_get_destructor(node_t *node) {
+  return node->destructor;
+}
+
 node_t *node_get_lpt(node_t *node) {
   return node->lpt;
 }
@@ -60,5 +64,3 @@ void node_destroy(node_t *node) {
 
   free(node);
 }
-
-
