@@ -30,7 +30,10 @@ size_t geo_processing(char *path, llist_t *shapes_list) {
       sscanf(str, "%*s %zu %lf %lf %lf %s %s", &id, &x, &y, &radius, border_color, color);
       circle_t *circle = circle_init(id, x, y, radius, color, border_color);
       shape_t *shape = shape_init(CIRCLE, circle);
-      queue_enqueue(queue, shape_as_node(shape));
+      llist_insertat_end(shapes_list, shape_as_node(shape));
+
+      free(border_color);
+      free(color);
 
       if (id > highest_id) highest_id = id;
     }
@@ -45,7 +48,10 @@ size_t geo_processing(char *path, llist_t *shapes_list) {
       sscanf(str, "%*s %zu %lf %lf %lf %lf %s %s", &id, &x, &y, &w, &h, border_color, color);
       rectangle_t *rect = rect_init(id, x, y, w, h, color, border_color);
       shape_t *shape = shape_init(RECTANGLE, rect);
-      queue_enqueue(queue, shape_as_node(shape));
+      llist_insertat_end(shapes_list, shape_as_node(shape));
+
+      free(border_color);
+      free(color);
 
       if (id > highest_id) highest_id = id;
     }
@@ -59,7 +65,9 @@ size_t geo_processing(char *path, llist_t *shapes_list) {
       sscanf(str, "%*s %zu %lf %lf %lf %lf %s", &id, &x1, &y1, &x2, &y2, color);
       line_t *line = line_init(id, x1, y1, x2, y2, color);
       shape_t *shape = shape_init(LINE, line);
-      queue_enqueue(queue, shape_as_node(shape));
+      llist_insertat_end(shapes_list, shape_as_node(shape));
+
+      free(color);
 
       if (id > highest_id) highest_id = id;
     }
@@ -79,29 +87,23 @@ size_t geo_processing(char *path, llist_t *shapes_list) {
       char *anchor;
       switch(a) {
         case 'i':
-          anchor = malloc(6);
-          strcpy(anchor, "start");
+          anchor = "start";
           break;
         case 'm':
-          anchor = malloc(7);
-          strcpy(anchor, "middle");
+          anchor = "middle";
           break;
         case 'f':
-          anchor = malloc(4);
-          strcpy(anchor, "end");
+          anchor = "end";
           break;
       }
 
-      char *font_fam = malloc(strlen(ffam) + 1);
-      strcpy(font_fam, ffam);
-      char *font_size = malloc(strlen(fsize) + 1);
-      strcpy(font_size, fsize);
-      char *font_weight = malloc(strlen(fweight) + 1);
-      strcpy(font_weight, fweight);
-
-      text_t *text = text_init(id, x, y, anchor, color, border_color, font_fam, font_weight, font_size, content);
+      text_t *text = text_init(id, x, y, anchor, color, border_color, ffam, fweight, fsize, content);
       shape_t *shape = shape_init(TEXT, text);
-      queue_enqueue(queue, shape_as_node(shape));
+      llist_insertat_end(shapes_list, shape_as_node(shape));
+
+      free(border_color);
+      free(color);
+      free(content);
       
       if (id > highest_id) highest_id = id;
     }

@@ -5,7 +5,7 @@
 #include "../shapes/rectangle.h"
 #include "../shapes/line.h"
 #include "../shapes/text.h"
-#include "../datast/queue.h"
+#include "../datast/linkedlist.h"
 
 typedef struct svg_t svg_t;
 
@@ -51,11 +51,11 @@ void svg_write_line(svg_t *svg, line_t *line);
   */
 void svg_write_text(svg_t *svg, text_t *text);
 
-/** @brief    Escreve todas as formas contidas em uma fila no arquivo SVG.
+/** @brief    Escreve todas as formas contidas em uma linked list no arquivo SVG.
   *
   * @param    svg       Uma instância de svg.
-  * @param    queue     Fila contendo as formas a serem escritas.
+  * @param    llist     Linked list contendo as formas a serem escritas.
   */
-void svg_write_queue(svg_t *svg, queue_t *queue);
+void svg_write_llist(svg_t *svg, llist_t *llist);
 
 #endif

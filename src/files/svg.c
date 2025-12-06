@@ -59,12 +59,12 @@ void svg_write_text(svg_t *svg, text_t *text) {
   fprintf(svg->svgfile, "</text>\n");
 }
 
-void svg_write_queue(svg_t *svg, queue_t *queue) {
-  size_t len = queue_get_length(queue);
+void svg_write_llist(svg_t *svg, llist_t *llist) {
+  size_t len = llist_get_length(llist);
 
+  node_t *current = llist_get_head(llist);
   for (size_t i = 0; i < len; i++) {
-    node_t *current = queue_dequeue(queue);
-    shape_t *shape = (shape_t *) node_getvalue(current);
+    shape_t *shape = (shape_t *) node_get_value(current);
 
     switch (shape_get_type(shape)) {
       case CIRCLE:
@@ -81,6 +81,6 @@ void svg_write_queue(svg_t *svg, queue_t *queue) {
         break;
     }
 
-    queue_enqueue(queue, current);
+    current = node_get_rpt(current);
   }
 }

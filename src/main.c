@@ -3,7 +3,6 @@
 #include <string.h>
 
 #include "datast/linkedlist.h"
-#include "datast/queue.h"
 #include "files/geo.h"
 #include "files/svg.h"
 #include "files/qry.h"
@@ -13,6 +12,8 @@ int main(int argc, char **argv) {
   char *geopath = NULL;
   char *out_dir = NULL;
   char *qrypath = NULL;
+  char *to = "q";
+  int threshold = 10;
 
   for (int i = 0; i < argc; i++) {
     if (strcmp(argv[i], "-e") == 0) {
@@ -29,6 +30,14 @@ int main(int argc, char **argv) {
 
     if (strcmp(argv[i], "-q") == 0) {
       qrypath = argv[i + 1];
+    }
+
+    if (strcmp(argv[i], "-to") == 0) {
+      to = argv[i + 1];
+    }
+
+    if (strcmp(argv[i], "-i") == 0) {
+      threshold = strtol(argv[i + 1], NULL, 10);
     }
   }
 
@@ -62,7 +71,7 @@ int main(int argc, char **argv) {
   sprintf(geosvg_path, "%s/%s.svg", out_dir, geo_name);
 
   svg_t *geosvg = svg_init(geosvg_path);
-  svg_write_queue(geosvg, ground);
+  svg_write_llist(geosvg, shapes_list);
   svg_close(geosvg);
 
   if (qrypath == NULL) {
@@ -70,7 +79,7 @@ int main(int argc, char **argv) {
     free(full_geopath);
     free(geosvg_path);
 
-    queue_destroy(ground);
+    llist_destroy(shapes_list);
     exit(0);
   }
 
@@ -94,10 +103,10 @@ int main(int argc, char **argv) {
   sprintf(outpath_svg, "%s/%s-%s.svg", out_dir, geo_name, qry_name);
   sprintf(outpath_txt, "%s/%s-%s.txt", out_dir, geo_name, qry_name);
 
-  qry_processing(full_qrypath, outpath_txt, ground, highest_id);
+  qry_processing(full_qrypath, outpath_txt, shapes_list, highest_id);
 
   svg_t *qrysvg = svg_init(outpath_svg);
-  svg_write_queue(qrysvg, ground);
+  svg_write_llist(qrysvg, shapes_list);
   svg_close(qrysvg);
 
   free(geo_name);
@@ -108,5 +117,5 @@ int main(int argc, char **argv) {
   free(outpath_svg);
   free(outpath_txt);
 
-  queue_destroy(ground);
+  llist_destroy(shapes_list);
 }
