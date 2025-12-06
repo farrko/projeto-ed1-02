@@ -34,6 +34,8 @@ polar_coords_t *polar_init(double angle, double distance, point_t *origin) {
     exit(1);
   }
 
+  if (angle < 0) angle += 2.0 * 3.1415926535;
+
   polar->angle = angle;
   polar->distance = distance;
 
@@ -95,6 +97,8 @@ void polar_set_origin(polar_coords_t *polar, point_t *origin) {
   double angle = atan2(origin->y - absolute_y, origin->x - absolute_x);
   double distance = sqrt(pow(origin->x - absolute_x, 2) + pow(origin->y - absolute_y, 2));
 
+  if (angle < 0) angle += 2.0 * 3.1415926535;
+
   point_t *origin_clone = point_init(origin->x, origin->y);
   free(polar->origin);
 
@@ -115,5 +119,11 @@ polar_coords_t *polar_from_cartesian(point_t *origin, point_t *final) {
   double angle = atan2(origin->y - final->y, origin->x - final->x);
   double distance = sqrt(pow(origin->x - final->x, 2) + pow(origin->y - final->y, 2));
 
+  if (angle < 0) angle += 2.0 * 3.1415926535;
+
   return polar_init(angle, distance, origin);
+}
+
+point_t *cartesian_from_polar(polar_coords_t *polar) {
+  return point_init(polar_get_absolute_x(polar), polar_get_absolute_y(polar));
 }

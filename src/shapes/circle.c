@@ -5,9 +5,11 @@
 
 #include "circle.h"
 
+#include "point.h"
+
 struct circle_t {
   size_t id;
-  double x, y;
+  point_t *origin;
   double radius;
   char *color;
   char *border_color;
@@ -21,8 +23,10 @@ circle_t *circle_init(size_t id, double x, double y, double radius, char *color,
   }
 
   circle->id = id;
-  circle->x = x;
-  circle->y = y;
+
+  point_t *origin = point_init(x, y);
+  circle->origin = origin;
+
   circle->radius = radius;
 
   char *_color = malloc(sizeof(color) + 1);
@@ -42,15 +46,17 @@ void circle_destroy(void *circle) {
   if (c->color != NULL) free(c->color);
   if (c->border_color != NULL) free(c->border_color);
 
+  point_destroy(c->origin);
+
   free(circle);
 }
 
 void circle_set_x(circle_t *circle, double x) {
-  circle->x = x;
+  point_set_x(circle->origin, x);
 }
 
 void circle_set_y(circle_t *circle, double y) {
-  circle->y = y;
+  point_set_y(circle->origin, y);
 }
 
 void circle_set_radius(circle_t *circle, double radius) {
@@ -78,11 +84,11 @@ size_t circle_get_id(circle_t *circle) {
 }
 
 double circle_get_x(circle_t *circle) {
-  return circle->x;
+  return point_get_x(circle->origin);
 }
 
 double circle_get_y(circle_t *circle) {
-  return circle->y;
+  return point_get_y(circle->origin);
 }
 
 double circle_get_radius(circle_t *circle) {
@@ -102,5 +108,5 @@ double circle_get_area(circle_t *circle) {
 }
 
 circle_t *circle_clone(circle_t *circle, size_t id) {
-  return circle_init(id, circle->x, circle->y, circle->radius, circle->color, circle->border_color);
+  return circle_init(id, point_get_x(circle->origin), point_get_y(circle->origin), circle->radius, circle->color, circle->border_color);
 }

@@ -26,7 +26,7 @@ node_t *node_init(void *value, void (*destructor)(void*)) {
 }
 
 void node_set_value(node_t *node, void *value) {
-  if (node->value != NULL) node->destructor(value);
+  if (node->value != NULL && node->destructor != NULL) node->destructor(node->value);
 
   node->value = value;
 }
@@ -60,7 +60,7 @@ node_t *node_get_rpt(node_t *node) {
 }
 
 void node_destroy(node_t *node) {
-  if (node->value != NULL) node->destructor(node->value);
+  if (node->value != NULL && node->destructor != NULL) node->destructor(node->value);
 
   free(node);
 }

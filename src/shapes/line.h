@@ -2,6 +2,7 @@
 #define LINE_H
 
 #include <stddef.h>
+#include "point.h"
 
 typedef struct line_t line_t;
 
@@ -70,6 +71,9 @@ void line_set_color(line_t *line, char *color);
   * @return   O ID de uma linha.
   */
 size_t line_get_id(line_t *line);
+
+point_t *line_get_p1(line_t *line);
+point_t *line_get_p2(line_t *line);
 
 /** @brief    Retorna o X1 de uma linha.
   *

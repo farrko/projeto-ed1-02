@@ -4,9 +4,11 @@
 
 #include "rectangle.h"
 
+#include "point.h"
+
 struct rectangle_t {
   size_t id;
-  double x, y;
+  point_t *origin;
   double width, height;
   char *color;
   char *border_color;
@@ -20,11 +22,12 @@ rectangle_t *rect_init(size_t id, double x, double y, double width, double heigh
   }
 
   rectangle->id = id;
-  rectangle->x = x;
-  rectangle->y = y;
+
+  point_t *origin = point_init(x, y);
+  rectangle->origin = origin;
+
   rectangle->width = width;
   rectangle->height = height;
-
 
   char *_color = malloc(sizeof(color) + 1);
   strcpy(_color, color);
@@ -43,15 +46,17 @@ void rect_destroy(void *rectangle) {
   if (rect->color != NULL) free(rect->color);
   if (rect->border_color != NULL) free(rect->border_color);
 
+  point_destroy(rect->origin);
+
   free(rect);
 }
 
 void rect_set_x(rectangle_t *rect, double x) {
-  rect->x = x;
+  point_set_x(rect->origin, x);
 }
 
 void rect_set_y(rectangle_t *rect, double y) {
-  rect->y = y;
+  point_set_x(rect->origin, y);
 }
 
 void rect_set_width(rectangle_t *rect, double width) {
@@ -83,11 +88,11 @@ size_t rect_get_id(rectangle_t *rect) {
 }
 
 double rect_get_x(rectangle_t *rect) {
-  return rect->x;
+  return point_get_x(rect->origin);
 }
 
 double rect_get_y(rectangle_t *rect) {
-  return rect->y;
+  return point_get_y(rect->origin);
 }
 
 double rect_get_width(rectangle_t *rect) {
@@ -107,5 +112,5 @@ char *rect_get_border_color(rectangle_t *rect) {
 }
 
 rectangle_t *rect_clone(rectangle_t *rect, size_t id) {
-  return rect_init(id, rect->x, rect->y, rect->width, rect->height, rect->color, rect->border_color);
+  return rect_init(id, point_get_x(rect->origin), point_get_y(rect->origin), rect->width, rect->height, rect->color, rect->border_color);
 }

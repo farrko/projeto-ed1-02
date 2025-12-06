@@ -4,9 +4,11 @@
 
 #include "text.h"
 
+#include "point.h"
+
 struct text_t {
   size_t id;
-  double x, y;
+  point_t *origin;
   char *anchor;
   char *color;
   char *border_color;
@@ -24,8 +26,9 @@ text_t *text_init(size_t id, double x, double y, char *anchor, char *color, char
   }
 
   text->id = id;
-  text->x = x;
-  text->y = y;
+
+  point_t *origin = point_init(x, y);
+  text->origin = origin;
 
   char *_anchor = malloc(sizeof(anchor) + 1);
   strcpy(_anchor, anchor);
@@ -69,15 +72,17 @@ void text_destroy(void *text) {
   if (t->fsize != NULL) free(t->fsize);
   if (t->content != NULL) free(t->content);
 
+  point_destroy(t->origin);
+
   free(t);
 }
 
 void text_set_x(text_t *text, double x) {
-  text->x = x;
+  point_set_x(text->origin, x);
 }
 
 void text_set_y(text_t *text, double y) {
-  text->y = y;
+  point_set_y(text->origin, y);
 }
 
 void text_set_anchor(text_t *text, char *anchor) {
@@ -141,11 +146,11 @@ size_t text_get_id(text_t *text) {
 }
 
 double text_get_x(text_t *text) {
-  return text->x;
+  return point_get_x(text->origin);
 }
 
 double text_get_y(text_t *text) {
-  return text->y;
+  return point_get_y(text->origin);
 }
 
 char *text_get_anchor(text_t *text) {
@@ -177,30 +182,30 @@ char *text_get_content(text_t *text) {
 }
 
 text_t *text_clone(text_t *text, size_t id) {
-  return text_init(id, text->x, text->y, text->anchor, text->color, text->border_color, text->ffam, text->fweight, text->fsize, text->content);
+  return text_init(id, point_get_x(text->origin), point_get_y(text->origin), text->anchor, text->color, text->border_color, text->ffam, text->fweight, text->fsize, text->content);
 }
 
 line_t *text_line_collision(text_t *text) {
   size_t len = strlen(text->content);
   size_t cl = 10 * len;
 
-  double x1, x2; 
+  double x1, x2;
 
   if (strcmp(text->anchor, "start") == 0) {
-    x1 = text->x;
+    x1 = point_get_x(text->origin);
     x2 = x1 + cl;
   }
 
   if (strcmp(text->anchor, "middle") == 0) {
-    x1 = text->x - (cl / 2.0);
-    x2 = text->x + (cl / 2.0);
+    x1 = point_get_x(text->origin) - (cl / 2.0);
+    x2 = point_get_x(text->origin) + (cl / 2.0);
   }
 
   if (strcmp(text->anchor, "end") == 0) {
-    x1 = text->x - cl;
-    x2 = text->x;
+    x1 = point_get_x(text->origin) - cl;
+    x2 = point_get_x(text->origin);
   }
 
-  line_t *line = line_init(0, x1, text->y, x2, text->y, NULL);
+  line_t *line = line_init(0, x1, point_get_y(text->origin), x2, point_get_y(text->origin), NULL);
   return line;
 }

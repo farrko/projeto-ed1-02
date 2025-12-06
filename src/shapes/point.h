@@ -27,5 +27,6 @@ double polar_get_absolute_x(polar_coords_t *polar);
 double polar_get_absolute_y(polar_coords_t *polar);
 
 polar_coords_t *polar_from_cartesian(point_t *origin, point_t *final);
+point_t *cartesian_from_polar(polar_coords_t *polar);
 
 #endif

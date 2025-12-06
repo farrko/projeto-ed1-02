@@ -6,7 +6,7 @@
 
 struct bitree_t {
   node_t *root;
-  int (*compare)(void *, void *);
+  int (*compare)(const void *, const void *);
 };
 
 static void node_free_rec(node_t *node) {
@@ -17,7 +17,7 @@ static void node_free_rec(node_t *node) {
   node_destroy(node);
 }
 
-bitree_t *bt_init(node_t *root, int (*compare)(void *, void *)) {
+bitree_t *bt_init(node_t *root, int (*compare)(const void *, const void *)) {
   bitree_t *bt = malloc(sizeof(bitree_t));
   if (bt == NULL) {
     printf("Erro na alocação de memória.\n");
@@ -38,11 +38,16 @@ void bt_insert_node(bitree_t *bt, node_t *node) {
   node_set_lpt(node, NULL);
   node_set_rpt(node, NULL);
 
+  if (bt->root == NULL) {
+    bt->root = node;
+    return;
+  }
+
   node_t *prev_node = NULL;
   node_t *current_node = bt->root;
 
   while(current_node != NULL) {
-    int compare_result = bt->compare(node_get_value(current_node), node_get_value(node));
+    int compare_result = bt->compare(node_get_value(node), node_get_value(current_node));
 
     if (!compare_result) {
       printf("Erro na inserção de nodes na árvore: nodes iguais.\n");
@@ -56,7 +61,7 @@ void bt_insert_node(bitree_t *bt, node_t *node) {
     } else current_node = node_get_rpt(current_node);
   }
 
-  if (bt->compare(node_get_value(prev_node), node_get_value(node)) < 0) {
+  if (bt->compare(node_get_value(node), node_get_value(prev_node)) < 0) {
     node_set_lpt(prev_node, node);
   } else node_set_rpt(prev_node, node);
 }
@@ -65,7 +70,7 @@ node_t *bt_search_node(bitree_t *bt, void *value) {
   node_t *current_node = bt->root;
 
   while(current_node != NULL) {
-    int compare_result = bt->compare(node_get_value(current_node), value);
+    int compare_result = bt->compare(value, node_get_value(current_node));
 
     if (!compare_result) return current_node;
 
@@ -90,7 +95,7 @@ static node_t *find_inorder_successor(node_t *node) {
 static node_t *node_delete_rec(bitree_t *bt, node_t *node, void *value, void **removed) {
   if (node == NULL) return NULL;
 
-  int compare = bt->compare(node_get_value(node), value);
+  int compare = bt->compare(value, node_get_value(node));
 
   node_t *left = node_get_lpt(node);
   node_t *right = node_get_rpt(node);
@@ -137,4 +142,8 @@ void *bt_remove_node(bitree_t *bt, void *value) {
   void *removed = NULL;
   bt->root = node_delete_rec(bt, bt->root, value, &removed);
   return removed;
+}
+
+node_t *bt_get_root(bitree_t *bt) {
+  return bt->root;
 }
