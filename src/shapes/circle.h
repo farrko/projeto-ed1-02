@@ -2,6 +2,7 @@
 #define CIRCLE_H
 
 #include <stddef.h>
+#include "point.h"
 
 typedef struct circle_t circle_t;
 
@@ -67,6 +68,8 @@ void circle_set_border_color(circle_t *circle, char *border_color);
   * @return   O ID de um círculo.
   */
 size_t circle_get_id(circle_t *circle);
+
+point_t *circle_get_origin(circle_t *circle);
 
 /** @brief    Retorna o X de um círculo.
   *

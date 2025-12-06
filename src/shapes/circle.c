@@ -83,6 +83,10 @@ size_t circle_get_id(circle_t *circle) {
   return circle->id;
 }
 
+point_t *circle_get_origin(circle_t *circle) {
+  return circle->origin;
+}
+
 double circle_get_x(circle_t *circle) {
   return point_get_x(circle->origin);
 }

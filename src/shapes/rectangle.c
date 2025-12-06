@@ -87,6 +87,10 @@ size_t rect_get_id(rectangle_t *rect) {
   return rect->id;
 }
 
+point_t *rect_get_origin(rectangle_t *rect) {
+  return rect->origin;
+}
+
 double rect_get_x(rectangle_t *rect) {
   return point_get_x(rect->origin);
 }

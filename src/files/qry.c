@@ -6,12 +6,114 @@
 
 static void txt_print_shape(FILE *txt, shape_t *shape);
 
-static void command_a();
-static void command_d();
+static llist_t *shape_to_barriers(node_t *shape, char seg_orientation, size_t *highest_id) {
+  shape_t *s = node_get_value(shape);
+
+  llist_t *barriers = llist_init();
+  
+  switch(shape_get_type(s)) {
+    case CIRCLE: {
+      circle_t *c = shape_as_circle(s);
+      double radius = circle_get_radius(c);
+      
+      line_t *l;
+
+      if (seg_orientation == 'v') {
+        l = line_init(++(*highest_id), circle_get_x(c), circle_get_y(c) + radius, circle_get_x(c), circle_get_y(c) - radius, circle_get_border_color(c));
+      } else {
+        l = line_init(++(*highest_id), circle_get_x(c) + radius, circle_get_y(c), circle_get_x(c) - radius, circle_get_y(c), circle_get_border_color(c));
+      }
+
+      llist_insertat_end(barriers, shape_as_node(shape_init(LINE, l)));
+      break;
+    }
+
+    case RECTANGLE: {
+      rectangle_t *r = shape_as_rectangle(s);
+
+      double rx = rect_get_x(r);
+      double ry = rect_get_y(r);
+      double rw = rect_get_width(r);
+      double rh = rect_get_height(r);
+
+      line_t *l1 = line_init(++(*highest_id), rx, ry, rx + rw, ry, rect_get_border_color(r));
+      line_t *l2 = line_init(++(*highest_id), rx, ry, rx, ry + rh, rect_get_border_color(r));
+      line_t *l3 = line_init(++(*highest_id), rx + rw, ry + rh, rx + rw, ry, rect_get_border_color(r));
+      line_t *l4 = line_init(++(*highest_id), rx + rw, ry + rh, rx, ry + rh, rect_get_border_color(r));
+
+      llist_insertat_end(barriers, shape_as_node(shape_init(LINE, l1)));
+      llist_insertat_end(barriers, shape_as_node(shape_init(LINE, l2)));
+      llist_insertat_end(barriers, shape_as_node(shape_init(LINE, l3)));
+      llist_insertat_end(barriers, shape_as_node(shape_init(LINE, l4)));
+
+      break;
+    }
+
+    case LINE: {
+      llist_insertat_end(barriers, shape_as_node(shape_clone(s, ++(*highest_id))));
+      break;
+    }
+
+    case TEXT: {
+      text_t *t = shape_as_text(s);
+
+      line_t *l = text_line_collision(t);
+      line_set_color(l, text_get_border_color(t));
+
+      llist_insertat_end(barriers, shape_as_node(shape_init(LINE, l)));
+      break;
+    }
+  }
+
+  node_destroy(shape);
+
+  return barriers;
+}
+
+static void command_a(llist_t *shapes, llist_t *barriers, size_t *highest_id, size_t i, size_t j, char seg_orientation, FILE *txt) {
+  size_t shapes_len = llist_get_length(shapes);
+  node_t *current = llist_get_head(shapes);
+  
+  size_t shapes_removed = 0;
+  for (size_t i = 0; i < shapes_len; i++) {
+    shape_t *shape = node_get_value(current);
+    size_t shape_id = shape_get_id(shape);
+
+    if (i < shape_id || shape_id > j) {
+      current = node_get_rpt(current);
+      continue;
+    }
+
+    fprintf(txt, "\n\n- TRANSFORMAÇÃO DE FORMA EM ANTEPARO - ORIGINAL: \n");
+    txt_print_shape(txt, shape);
+  
+    node_t *next = node_get_rpt(current);
+    node_t *removed = llist_popat_index(shapes, i - shapes_removed);
+    current = next;
+
+    llist_t *new_barriers = shape_to_barriers(removed, seg_orientation, highest_id);
+    size_t nb_len = llist_get_length(new_barriers);
+
+    fprintf(txt, "\n\n- NOVOS ANTEPAROS: \n");
+    for (size_t i = 0; i < nb_len; i++) {
+      node_t *popped = llist_popat_start(new_barriers);
+      txt_print_shape(txt, node_get_value(popped));
+
+      llist_insertat_end(barriers, popped);
+    }
+
+    shapes_removed++;
+  }
+}
+
+static void command_d() {
+  
+}
+
 static void command_p();
 static void command_cln();
 
-void qry_processing(char *qrypath, char *txtpath, llist_t *shapes, size_t highest_id) {
+void qry_processing(char *qrypath, char *txtpath, llist_t *shapes, size_t highest_id, char *qrysvg) {
   FILE *qry = fopen(qrypath, "r");
   if (qry == NULL) {
     printf("Erro na leitura do arquivo .qry.\n");
@@ -19,6 +121,11 @@ void qry_processing(char *qrypath, char *txtpath, llist_t *shapes, size_t highes
   }
 
   FILE *txt = fopen(txtpath, "w");
+
+  char *qrysfx = malloc(strlen(qrysvg) + 26); // 26 -> 1 do traço + 24 do tamanho máximo de sfx + null term
+  strncpy(qrysfx, qrysvg, strlen(qrysvg) - 4);
+
+  llist_t *barriers = llist_init();
 
   char str[256];
   while(fgets(str, 256, qry)) {
@@ -30,7 +137,7 @@ void qry_processing(char *qrypath, char *txtpath, llist_t *shapes, size_t highes
       sscanf(str, "%*s %zu %zu %c", &i, &j, &seg_orientation);
       fprintf(txt, "a %zu %zu %c\n", i, j, seg_orientation);
 
-      command_a();
+      command_a(shapes, barriers, &highest_id, i, j, seg_orientation, txt);
     }
 
     // Bomba de destruição

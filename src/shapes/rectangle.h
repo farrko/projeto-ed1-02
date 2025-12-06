@@ -2,6 +2,7 @@
 #define RECTANGLE_H
 
 #include <stddef.h>
+#include "point.h"
 
 typedef struct rectangle_t rectangle_t;
 
@@ -75,6 +76,8 @@ void rect_set_border_color(rectangle_t *rect, char *border_color);
   * @return   O ID de um retângulo.
   */
 size_t rect_get_id(rectangle_t *rect);
+
+point_t *rect_get_origin(rectangle_t *rect);
 
 /** @brief    Retorna o X de um retângulo.
   *
