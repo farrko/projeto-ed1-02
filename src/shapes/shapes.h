@@ -140,6 +140,8 @@ char *shape_get_border_color(shape_t *shape);
   */
 void shape_set_border_color(shape_t *shape, char *border_color);
 
+void shape_set_color(shape_t *shape, char *color);
+
 /** @brief    Move o shape aplicando deslocamentos lineares.
   *
   * @param    shape   Uma instância de shape.

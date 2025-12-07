@@ -103,9 +103,11 @@ int main(int argc, char **argv) {
   sprintf(outpath_svg, "%s/%s-%s.svg", out_dir, geo_name, qry_name);
   sprintf(outpath_txt, "%s/%s-%s.txt", out_dir, geo_name, qry_name);
 
+  svg_t *qrysvg = svg_init(outpath_svg);
+
   qry_processing(full_qrypath, outpath_txt, shapes_list, highest_id, outpath_svg);
 
-  svg_t *qrysvg = svg_init(outpath_svg);
+  svg_write_llist(qrysvg, shapes_list);
   svg_write_llist(qrysvg, shapes_list);
   svg_close(qrysvg);
 
