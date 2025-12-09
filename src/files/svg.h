@@ -6,6 +6,7 @@
 #include "../shapes/line.h"
 #include "../shapes/text.h"
 #include "../datast/linkedlist.h"
+#include "../shapes/polygon.h"
 
 typedef struct svg_t svg_t;
 
@@ -22,6 +23,8 @@ svg_t *svg_init(char *path);
   * @param    svg    Uma instância de svg.
   */
 void svg_close(svg_t *svg);
+
+char *svg_get_path(svg_t *svg);
 
 /** @brief    Escreve um círculo no arquivo SVG.
   *
@@ -50,6 +53,8 @@ void svg_write_line(svg_t *svg, line_t *line);
   * @param    text      A forma de texto a ser escrita.
   */
 void svg_write_text(svg_t *svg, text_t *text);
+
+void svg_write_polygon(svg_t *svg, polygon_t *py);
 
 /** @brief    Escreve todas as formas contidas em uma linked list no arquivo SVG.
   *

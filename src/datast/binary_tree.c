@@ -92,7 +92,7 @@ static node_t *find_inorder_successor(node_t *node) {
   return node;
 }
 
-static node_t *node_delete_rec(bitree_t *bt, node_t *node, void *value, void **removed) {
+static node_t *node_delete_rec(bitree_t *bt, node_t *node, void *value) {
   if (node == NULL) return NULL;
 
   int compare = bt->compare(value, node_get_value(node));
@@ -101,12 +101,10 @@ static node_t *node_delete_rec(bitree_t *bt, node_t *node, void *value, void **r
   node_t *right = node_get_rpt(node);
 
   if (compare > 0) {
-    node_set_rpt(node, node_delete_rec(bt, right, value, removed));
+    node_set_rpt(node, node_delete_rec(bt, right, value));
   } else if (compare < 0) {
-    node_set_lpt(node, node_delete_rec(bt, left, value, removed));
+    node_set_lpt(node, node_delete_rec(bt, left, value));
   } else {
-    *removed = node_get_value(node);
-  
     /*  EXPLICAÇÃO DA REMOÇÃO DE NODE
      *
      *  Este ponto do código é alcançado quando o node com valor igual a value for encontrado.
@@ -121,27 +119,27 @@ static node_t *node_delete_rec(bitree_t *bt, node_t *node, void *value, void **r
      *  possua duas conexões, ele não será deletado, o seu valor será trocado pelo valor do inorder successor, que, então, será deletado.
      */
 
-    if (left == NULL || right == NULL) free(node);
+    if (left == NULL || right == NULL) node_destroy(node);
 
     if (left == NULL && right == NULL) return NULL;
     if (left == NULL) return right;
     if (right == NULL) return left;
 
-    void *ios_v = NULL;
-
     node_t *inorder_successor = find_inorder_successor(right);
+
     node_set_value(node, node_get_value(inorder_successor));
     node_set_destructor(node, node_get_destructor(inorder_successor));
-    node_set_rpt(node, node_delete_rec(bt, right, node_get_value(inorder_successor), &ios_v));
+
+    node_set_destructor(inorder_successor, NULL);
+
+    node_set_rpt(node, node_delete_rec(bt, right, node_get_value(inorder_successor)));
   }
 
   return node;
 }
 
-void *bt_remove_node(bitree_t *bt, void *value) {
-  void *removed = NULL;
-  bt->root = node_delete_rec(bt, bt->root, value, &removed);
-  return removed;
+void bt_remove_node(bitree_t *bt, void *value) {
+  bt->root = node_delete_rec(bt, bt->root, value);
 }
 
 node_t *bt_get_root(bitree_t *bt) {

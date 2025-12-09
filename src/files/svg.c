@@ -6,6 +6,7 @@
 
 struct svg_t {
   FILE *svgfile;
+  char *path;
 };
 
 svg_t *svg_init(char *path) {
@@ -24,6 +25,8 @@ svg_t *svg_init(char *path) {
   fprintf(file, "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">\n");
 
   svg->svgfile = file;
+  svg->path = path;
+
   return svg;
 }
 
@@ -34,7 +37,12 @@ void svg_close(svg_t *svg) {
 
   fprintf(file, "</svg>\n");
   fclose(file);
+  free(svg->path);
   free(svg);
+}
+
+char *svg_get_path(svg_t *svg) {
+  return svg->path;
 }
 
 void svg_write_circle(svg_t *svg, circle_t *circle) {
@@ -57,6 +65,26 @@ void svg_write_text(svg_t *svg, text_t *text) {
   fprintf(svg->svgfile, "<text id=\"%zu\" x=\"%f\" y=\"%f\" text-anchor=\"%s\" fill=\"%s\" stroke=\"%s\" font-family=\"%s\" font-weight=\"%s\" font-size=\"%s\" fill-opacity=\"0.5\">\n", text_get_id(text), text_get_x(text), text_get_y(text), text_get_anchor(text), text_get_color(text), text_get_border_color(text), text_get_ffam(text), text_get_fweight(text), text_get_fsize(text));
   fprintf(svg->svgfile, "%s\n", text_get_content(text));
   fprintf(svg->svgfile, "</text>\n");
+}
+
+void svg_write_polygon(svg_t *svg, polygon_t *py) {
+  llist_t *pyv = py_get_vertices(py);
+  size_t pyv_len = llist_get_length(pyv);
+
+  if (pyv_len < 3) return;
+
+  fprintf(svg->svgfile, "<polygon points=\"");
+
+  node_t *current = llist_get_head(pyv);
+  for (size_t i = 0; i < pyv_len; i++) {
+    point_t *point = node_get_value(current);
+
+    fprintf(svg->svgfile, "%.5lf, %.5lf ", point_get_x(point), point_get_y(point));
+
+    current = node_get_rpt(current);
+  }
+
+  fprintf(svg->svgfile, "\" stroke=\"#171a4a\" fill=\"#4040fb\" fill-opacity=\"0.35\" />\n");
 }
 
 void svg_write_llist(svg_t *svg, llist_t *llist) {

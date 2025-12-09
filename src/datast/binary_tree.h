@@ -15,7 +15,7 @@ void bt_insert_node(bitree_t *bt, node_t *node);
 
 node_t *bt_search_node(bitree_t *bt, void *value);
 
-void *bt_remove_node(bitree_t *bt, void *value);
+void bt_remove_node(bitree_t *bt, void *value);
 
 node_t *bt_get_root(bitree_t *bt);
 

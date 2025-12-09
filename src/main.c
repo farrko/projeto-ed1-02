@@ -105,18 +105,15 @@ int main(int argc, char **argv) {
 
   svg_t *qrysvg = svg_init(outpath_svg);
 
-  qry_processing(full_qrypath, outpath_txt, shapes_list, highest_id, outpath_svg);
+  qry_processing(full_qrypath, outpath_txt, shapes_list, highest_id, qrysvg);
 
-  svg_write_llist(qrysvg, shapes_list);
   svg_write_llist(qrysvg, shapes_list);
   svg_close(qrysvg);
 
   free(geo_name);
   free(full_geopath);
-  free(geosvg_path);
   free(full_qrypath);
   free(qry_name);
-  free(outpath_svg);
   free(outpath_txt);
 
   llist_destroy(shapes_list);

@@ -26,6 +26,8 @@ line_t *line_init(size_t id, double x1, double y1, double x2, double y2, char *c
   */
 void line_destroy(void *line);
 
+void line_set_id(line_t *line, size_t id);
+
 /** @brief    Define o X1 de uma linha.
   *
   * @param    line    Uma instância de linha.

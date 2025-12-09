@@ -206,6 +206,6 @@ line_t *text_line_collision(text_t *text) {
     x2 = point_get_x(text->origin);
   }
 
-  line_t *line = line_init(0, x1, point_get_y(text->origin), x2, point_get_y(text->origin), NULL);
+  line_t *line = line_init(0, x1, point_get_y(text->origin), x2, point_get_y(text->origin), "black");
   return line;
 }

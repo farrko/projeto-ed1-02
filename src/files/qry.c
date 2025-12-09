@@ -2,53 +2,29 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "qry.h"
 #include "../shapes/shapes.h"
 #include "../shapes/polygon.h"
 #include "../utils/visibility.h"
+#include "svg.h"
 
 static void txt_print_shape(FILE *txt, shape_t *shape);
 
-static char *qry_sfx(char *qrysfx, char *sfx) {
-  char *qry_sfx = malloc(strlen(qrysfx) + 30);  // 1 do traço + 24 do sufixo + 4 da extensão + 1 do null character
-  strcpy(qry_sfx, qrysfx);
+static svg_t *qrysvg_sfx(svg_t *qrysvg, char *sfx) {
+  char *original_path = svg_get_path(qrysvg);
+  if (strcmp(sfx, "-") == 0) return qrysvg;
 
-  if (strncmp(sfx, "-", 1) == 0) {
-    strcat(qry_sfx, ".svg");
-  } else {
-    char *s = malloc(25);
-    snprintf(s, 25, "-%s.svg", sfx);
-    strcat(qry_sfx, s);
-    free(s);
-  }
+  char *qry_sfx = malloc(strlen(original_path) + strlen(sfx) + 2);  // 1 do traço + 1 do null character
+  qry_sfx[0] = '\0';
 
-  return qry_sfx;
-}
+  strncpy(qry_sfx, original_path, strlen(original_path) - 4); // copiando tudo menos a extensão
+  strcat(qry_sfx, "-");
+  strcat(qry_sfx, sfx);
+  strcat(qry_sfx, ".svg");
 
-static void svg_write_polygon(char *svgpath, polygon_t *py) {
-  llist_t *pyv = py_get_vertices(py);
-  size_t pyv_len = llist_get_length(pyv);
+  svg_t *svg_sfx = svg_init(qry_sfx);
 
-  if (pyv_len < 3) return;
-
-  FILE *svg = fopen(svgpath, "a");
-  if (svg == NULL) {
-    printf("Erro ao abrir o arquivo SVG.\n");
-    exit(1);
-  }
-
-  fprintf(svg, "<polygon points=\"");
-
-  node_t *current = llist_get_head(pyv);
-  for (size_t i = 0; i < pyv_len; i++) {
-    point_t *point = node_get_value(current);
-
-    fprintf(svg, "%.5lf, %.5lf ", point_get_x(point), point_get_y(point));
-
-    current = node_get_rpt(current);
-  }
-
-  fprintf(svg, "\" stroke=\"#171a4a\" fill=\"#4040fb\" fill-opacity=\"0.35\" />\n");
-  fclose(svg);
+  return svg_sfx;
 }
 
 static llist_t *shape_to_barriers(node_t *shape, char seg_orientation, size_t *highest_id) {
@@ -64,9 +40,9 @@ static llist_t *shape_to_barriers(node_t *shape, char seg_orientation, size_t *h
       line_t *l;
 
       if (seg_orientation == 'v') {
-        l = line_init(++(*highest_id), circle_get_x(c), circle_get_y(c) + radius, circle_get_x(c), circle_get_y(c) - radius, circle_get_border_color(c));
+        l = line_init(++*highest_id, circle_get_x(c), circle_get_y(c) + radius, circle_get_x(c), circle_get_y(c) - radius, circle_get_border_color(c));
       } else {
-        l = line_init(++(*highest_id), circle_get_x(c) + radius, circle_get_y(c), circle_get_x(c) - radius, circle_get_y(c), circle_get_border_color(c));
+        l = line_init(++*highest_id, circle_get_x(c) + radius, circle_get_y(c), circle_get_x(c) - radius, circle_get_y(c), circle_get_border_color(c));
       }
 
       llist_insertat_end(barriers, shape_as_node(shape_init(LINE, l)));
@@ -81,10 +57,10 @@ static llist_t *shape_to_barriers(node_t *shape, char seg_orientation, size_t *h
       double rw = rect_get_width(r);
       double rh = rect_get_height(r);
 
-      line_t *l1 = line_init(++(*highest_id), rx, ry, rx + rw, ry, rect_get_border_color(r));
-      line_t *l2 = line_init(++(*highest_id), rx, ry, rx, ry + rh, rect_get_border_color(r));
-      line_t *l3 = line_init(++(*highest_id), rx + rw, ry + rh, rx + rw, ry, rect_get_border_color(r));
-      line_t *l4 = line_init(++(*highest_id), rx + rw, ry + rh, rx, ry + rh, rect_get_border_color(r));
+      line_t *l1 = line_init(++*highest_id, rx, ry, rx + rw, ry, rect_get_border_color(r));
+      line_t *l2 = line_init(++*highest_id, rx, ry, rx, ry + rh, rect_get_border_color(r));
+      line_t *l3 = line_init(++*highest_id, rx + rw, ry + rh, rx + rw, ry, rect_get_border_color(r));
+      line_t *l4 = line_init(++*highest_id, rx + rw, ry + rh, rx, ry + rh, rect_get_border_color(r));
 
       llist_insertat_end(barriers, shape_as_node(shape_init(LINE, l1)));
       llist_insertat_end(barriers, shape_as_node(shape_init(LINE, l2)));
@@ -95,7 +71,7 @@ static llist_t *shape_to_barriers(node_t *shape, char seg_orientation, size_t *h
     }
 
     case LINE: {
-      llist_insertat_end(barriers, shape_as_node(shape_clone(s, ++(*highest_id))));
+      llist_insertat_end(barriers, shape_as_node(shape_clone(s, ++*highest_id)));
       break;
     }
 
@@ -103,6 +79,7 @@ static llist_t *shape_to_barriers(node_t *shape, char seg_orientation, size_t *h
       text_t *t = shape_as_text(s);
 
       line_t *l = text_line_collision(t);
+      line_set_id(l, ++*highest_id);
       line_set_color(l, text_get_border_color(t));
 
       llist_insertat_end(barriers, shape_as_node(shape_init(LINE, l)));
@@ -143,11 +120,11 @@ static void command_a(llist_t *shapes, llist_t *barriers, size_t *highest_id, si
   node_t *current = llist_get_head(shapes);
   
   size_t shapes_removed = 0;
-  for (size_t i = 0; i < shapes_len; i++) {
+  for (size_t k = 0; k < shapes_len; k++) {
     shape_t *shape = node_get_value(current);
     size_t shape_id = shape_get_id(shape);
 
-    if (i < shape_id || shape_id > j) {
+    if (shape_id < i || shape_id > j) {
       current = node_get_rpt(current);
       continue;
     }
@@ -156,14 +133,14 @@ static void command_a(llist_t *shapes, llist_t *barriers, size_t *highest_id, si
     txt_print_shape(txt, shape);
   
     node_t *next = node_get_rpt(current);
-    node_t *removed = llist_popat_index(shapes, i - shapes_removed);
+    node_t *removed = llist_popat_index(shapes, k - shapes_removed);
     current = next;
 
     llist_t *new_barriers = shape_to_barriers(removed, seg_orientation, highest_id);
     size_t nb_len = llist_get_length(new_barriers);
 
     fprintf(txt, "\n\n- NOVOS ANTEPAROS: \n");
-    for (size_t i = 0; i < nb_len; i++) {
+    for (size_t l = 0; l < nb_len; l++) {
       node_t *popped = llist_popat_start(new_barriers);
       txt_print_shape(txt, node_get_value(popped));
 
@@ -174,11 +151,13 @@ static void command_a(llist_t *shapes, llist_t *barriers, size_t *highest_id, si
   }
 }
 
-static void command_d(llist_t *shapes, llist_t *barriers, double x, double y, char *sfx, FILE *txt, char *qrysfx) {
-  char *qrysvg_sfx = qry_sfx(qrysfx, sfx);
+static void command_d(llist_t *shapes, llist_t *barriers, double x, double y, char *sfx, FILE *txt, svg_t *qrysvg) {
+  svg_t *svg_sfx = qrysvg_sfx(qrysvg, sfx);
   
   point_t *origin = point_init(x, y);
-  polygon_t *py = generate_visibility_polygon(shapes, barriers, origin);
+  polygon_t *py = generate_visibility_polygon(barriers, origin);
+
+  svg_write_polygon(svg_sfx, py);
 
   llist_t *inside_py = shapes_inside_polygon(shapes, py);
   node_t *current = llist_get_head(inside_py);
@@ -190,16 +169,20 @@ static void command_d(llist_t *shapes, llist_t *barriers, double x, double y, ch
 
     current = node_get_rpt(current);
   }
+
+  py_destroy(py);
   
   llist_destroy(inside_py);
-  free(qrysvg_sfx);
+  if (svg_get_path(svg_sfx) != svg_get_path(qrysvg)) svg_close(svg_sfx);
 }
 
-static void command_p(llist_t *shapes, llist_t *barriers, double x, double y, char *color, char *sfx, FILE *txt, char *qrysfx) {
-  char *qrysvg_sfx = qry_sfx(qrysfx, sfx);
+static void command_p(llist_t *shapes, llist_t *barriers, double x, double y, char *color, char *sfx, FILE *txt, svg_t *qrysvg) {
+  svg_t *svg_sfx = qrysvg_sfx(qrysvg, sfx);
   
   point_t *origin = point_init(x, y);
-  polygon_t *py = generate_visibility_polygon(shapes, barriers, origin);
+  polygon_t *py = generate_visibility_polygon(barriers, origin);
+
+  svg_write_polygon(svg_sfx, py);
 
   llist_t *inside_py = shapes_inside_polygon(shapes, py);
   node_t *current = llist_get_head(inside_py);
@@ -214,19 +197,23 @@ static void command_p(llist_t *shapes, llist_t *barriers, double x, double y, ch
     current = node_get_rpt(current);
   }
 
+  py_destroy(py);
+
   for (size_t i = 0; i < ipy_len; i++) {
     llist_insertat_end(shapes, llist_popat_start(inside_py));
   }
   
   llist_destroy(inside_py);
-  free(qrysvg_sfx);
+  if (svg_get_path(svg_sfx) != svg_get_path(qrysvg)) svg_close(svg_sfx);
 }
 
-static void command_cln(llist_t *shapes, llist_t *barriers, double x, double y, double dx, double dy, char *sfx, size_t *highest_id, FILE *txt, char *qrysfx) {
-  char *qrysvg_sfx = qry_sfx(qrysfx, sfx);
+static void command_cln(llist_t *shapes, llist_t *barriers, double x, double y, double dx, double dy, char *sfx, size_t *highest_id, FILE *txt, svg_t *qrysvg) {
+  svg_t *svg_sfx = qrysvg_sfx(qrysvg, sfx);
   
   point_t *origin = point_init(x, y);
-  polygon_t *py = generate_visibility_polygon(shapes, barriers, origin);
+  polygon_t *py = generate_visibility_polygon(barriers, origin);
+
+  svg_write_polygon(svg_sfx, py);
 
   llist_t *inside_py = shapes_inside_polygon(shapes, py);
   node_t *current = llist_get_head(inside_py);
@@ -246,16 +233,18 @@ static void command_cln(llist_t *shapes, llist_t *barriers, double x, double y, 
 
     current = node_get_rpt(current);
   }
+
+  py_destroy(py);
   
   for (size_t i = 0; i < ipy_len; i++) {
     llist_insertat_end(shapes, llist_popat_start(inside_py));
   }
 
   llist_destroy(inside_py);
-  free(qrysvg_sfx);
+  if (svg_get_path(svg_sfx) != svg_get_path(qrysvg)) svg_close(svg_sfx);
 }
 
-void qry_processing(char *qrypath, char *txtpath, llist_t *shapes, size_t highest_id, char *qrysvg) {
+void qry_processing(char *qrypath, char *txtpath, llist_t *shapes, size_t highest_id, svg_t *qrysvg) {
   FILE *qry = fopen(qrypath, "r");
   if (qry == NULL) {
     printf("Erro na leitura do arquivo .qry.\n");
@@ -263,11 +252,6 @@ void qry_processing(char *qrypath, char *txtpath, llist_t *shapes, size_t highes
   }
 
   FILE *txt = fopen(txtpath, "w");
-
-  char *qrysfx = malloc(strlen(qrysvg) - 3);
-  strncpy(qrysfx, qrysvg, strlen(qrysvg) - 4);
-  qrysfx[strlen(qrysvg)] = '\0';
-
   llist_t *barriers = llist_init();
 
   char str[256];
@@ -280,6 +264,8 @@ void qry_processing(char *qrypath, char *txtpath, llist_t *shapes, size_t highes
       sscanf(str, "%*s %zu %zu %c", &i, &j, &seg_orientation);
       fprintf(txt, "a %zu %zu %c\n", i, j, seg_orientation);
 
+      printf("a %zu %zu %c\n", i, j, seg_orientation);
+
       command_a(shapes, barriers, &highest_id, i, j, seg_orientation, txt);
     }
 
@@ -290,8 +276,10 @@ void qry_processing(char *qrypath, char *txtpath, llist_t *shapes, size_t highes
 
       sscanf(str, "%*s %lf %lf %s", &x, &y, sfx);
       fprintf(txt, "d %lf %lf %s\n", x, y, sfx);
-      
-      command_d(shapes, barriers, x, y, sfx, txt, qrysfx);
+
+      printf("d %lf %lf %s\n", x, y, sfx);
+
+      command_d(shapes, barriers, x, y, sfx, txt, qrysvg);
 
       free(sfx);
     }
@@ -305,7 +293,9 @@ void qry_processing(char *qrypath, char *txtpath, llist_t *shapes, size_t highes
       sscanf(str, "%*s %lf %lf %s %s", &x, &y, color, sfx);
       fprintf(txt, "p %lf %lf %s %s\n", x, y, color, sfx);
 
-      command_p(shapes, barriers, x, y, color, sfx, txt, qrysfx);
+      printf("p %lf %lf %s %s\n", x, y, color, sfx);
+
+      command_p(shapes, barriers, x, y, color, sfx, txt, qrysvg);
 
       free(color);
       free(sfx);
@@ -319,7 +309,9 @@ void qry_processing(char *qrypath, char *txtpath, llist_t *shapes, size_t highes
       sscanf(str, "%*s %lf %lf %lf %lf %s", &x, &y, &dx, &dy, sfx);
       fprintf(txt, "cln %lf %lf %lf %lf %s\n", x, y, dx, dy, sfx);
 
-      command_cln(shapes, barriers, x, y, dx, dy, sfx, &highest_id, txt, qrysfx);
+      printf("cln %lf %lf %lf %lf %s\n", x, y, dx, dy, sfx);
+
+      command_cln(shapes, barriers, x, y, dx, dy, sfx, &highest_id, txt, qrysvg);
 
       free(sfx);
     }
@@ -332,7 +324,6 @@ void qry_processing(char *qrypath, char *txtpath, llist_t *shapes, size_t highes
 
   llist_destroy(barriers);
 
-  free(qrysfx);
   fclose(qry);
   fclose(txt);
 }

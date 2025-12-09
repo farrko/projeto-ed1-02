@@ -46,6 +46,10 @@ void line_destroy(void *line) {
   free(l);
 }
 
+void line_set_id(line_t *line, size_t id) {
+  line->id = id;
+}
+
 void line_set_x1(line_t *line, double x1) {
   point_set_x(line->p1, x1);
 }

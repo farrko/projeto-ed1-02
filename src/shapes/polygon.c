@@ -25,6 +25,11 @@ polygon_t *py_init() {
   return py;
 }
 
+void py_destroy(polygon_t *py) {
+  llist_destroy(py->vertices);
+  free(py);
+}
+
 void py_add_vertex(polygon_t *py, point_t *point) {
   point_t *point_clone = point_init(point_get_x(point), point_get_y(point));
   llist_insertat_end(py->vertices, node_init(point_clone, point_destroy));

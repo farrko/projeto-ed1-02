@@ -5,12 +5,11 @@
 
 #include "visibility.h"
 
-#include "../shapes/shapes.h"
-
+#include "../datast/linkedlist.h"
 #include "../datast/binary_tree.h"
 
 #define EPSILON 1e-12
-#define PI 3.1415926535
+#define PI 3.14159265358979323846
 
 typedef struct {
   line_t *barrier;
@@ -23,6 +22,38 @@ typedef struct {
     line_t *barrier;
     double distance;
 } active_barrier_t;
+
+static double bbox_distance(point_t *origin, double angle, double min_x, double min_y, double max_x, double max_y) {
+  double ox = point_get_x(origin);
+  double oy = point_get_y(origin);
+
+  double dx = cos(angle);
+  double dy = sin(angle);
+
+  double t_min = INFINITY;
+
+  if (fabs(dx) > EPSILON) {
+    double t = (min_x - ox) / dx;
+    if (t >= 0) t_min = fmin(t_min, t);
+  }
+
+  if (fabs(dx) > EPSILON) {
+    double t = (max_x - ox) / dx;
+    if (t >= 0) t_min = fmin(t_min, t);
+  }
+
+  if (fabs(dy) > EPSILON) {
+    double t = (min_y - oy) / dy;
+    if (t >= 0) t_min = fmin(t_min, t);
+  }
+
+  if (fabs(dy) > EPSILON) {
+    double t = (max_y - oy) / dy;
+    if (t >= 0) t_min = fmin(t_min, t);
+  }
+
+  return t_min;
+}
 
 static double static_distance_to_barrier(line_t *barrier, point_t *origin) {
   double lx1 = line_get_x1(barrier);
@@ -71,22 +102,33 @@ static barrier_angle_aux_t *barriers_to_angles(llist_t *barriers, point_t *origi
 
   node_t *current_barrier = llist_get_head(barriers);
   for (size_t i = 0; i < barriers_len; i++) {
-    line_t *barrier = node_get_value(current_barrier);
+    line_t *barrier = shape_as_line(node_get_value(current_barrier));
 
     polar_coords_t *b_p1_p = polar_from_cartesian(origin,  line_get_p1(barrier));
     polar_coords_t *b_p2_p = polar_from_cartesian(origin, line_get_p2(barrier));
 
-    double diff = polar_get_angle(b_p2_p) - polar_get_angle(b_p1_p);
-    if (diff < 0) diff += 2.0 * PI;
-    if (diff > PI) {
-      polar_coords_t *aux = b_p1_p;
+    double a1 = polar_get_angle(b_p1_p);
+    double a2 = polar_get_angle(b_p2_p);
+
+    double da = a2 - a1;
+
+    while (da > PI) da -= 2 * PI;
+    while (da < -PI) da += 2 * PI;
+
+    if (da < 0) {
+      polar_coords_t *tmp = b_p1_p;
       b_p1_p = b_p2_p;
-      b_p2_p = aux;
+      b_p2_p = tmp;
     }
-    
+
+    a1 = polar_get_angle(b_p1_p);
+    a2 = polar_get_angle(b_p2_p);
+
+    printf("Barreira %zu - ângulo do primeiro ponto: %.3lf, ângulo do segundo ponto: %.3lf\n", line_get_id(barrier), a1 * 180/PI, a2 * 180/PI);
+
     double distance = static_distance_to_barrier(barrier, origin);
 
-    if (polar_get_angle(b_p1_p) > polar_get_angle(b_p2_p)) {
+    if (a1 > a2) {
       polar_coords_t *to_pi = polar_init(PI, distance, origin);
       polar_coords_t *from_zero = polar_init(0, distance, origin);
 
@@ -120,7 +162,7 @@ static int cmp_baa(const void *a, const void *b) {
     if (baa_a->static_distance_to_barrier < baa_b->static_distance_to_barrier - EPSILON) return -1;
     if (baa_a->static_distance_to_barrier > baa_b->static_distance_to_barrier + EPSILON) return 1;
 
-    return 0;
+    return (line_get_id(baa_a->barrier) < line_get_id(baa_b->barrier)) ? -1 : 1;
   }
 
   if (baa_a_angle < baa_b_angle) return -1;
@@ -147,44 +189,48 @@ static void active_barriers_update(bitree_t *active_barriers, barrier_angle_aux_
       exit(1);
     }
 
+    printf("Nova barreira inserida na árvore: id = %zu\n", line_get_id(baa->barrier));
+
     new_ab->barrier = baa->barrier;
     new_ab->distance = baa->static_distance_to_barrier;
     bt_insert_node(active_barriers, node_init(new_ab, free));
   } else {
     active_barrier_t b = { baa->barrier, baa->static_distance_to_barrier };
-    void *removed = bt_remove_node(active_barriers, &b);
-    if (removed) free(removed);
+    printf("Barreira removida da árvore: id = %zu\n", line_get_id(baa->barrier));
+    bt_remove_node(active_barriers, &b);
   }
 }
 
-static double dynamic_distance_to_barrier(line_t *barrier, point_t *origin, double angle) {
+double dynamic_distance_to_barrier(line_t *barrier, point_t *origin, double angle) {
   double ox = point_get_x(origin);
   double oy = point_get_y(origin);
 
-  // 16384 é um tamanho arbitrário para criar uma linha e calcular a distância até a interseção
-  const double R = 16384;
+  double x1 = line_get_x1(barrier);
+  double y1 = line_get_y1(barrier);
+  double x2 = line_get_x2(barrier);
+  double y2 = line_get_y2(barrier);
 
-  double rx = ox + R * cos(angle);
-  double ry = oy + R * sin(angle);
+  double rdx = cos(angle);
+  double rdy = sin(angle);
 
-  double lx1 = line_get_x1(barrier);
-  double lx2 = line_get_x2(barrier);
-  double ly1 = line_get_y1(barrier);
-  double ly2 = line_get_y2(barrier);
+  double sdx = x2 - x1;
+  double sdy = y2 - y1;
 
-  double denom = (ly2 - ly1) * (rx - ox) - (lx2 - lx1) * (ry - oy);
+  double qpx = x1 - ox;
+  double qpy = y1 - oy;
 
-  if (fabs(denom) < EPSILON) return INFINITY;
+  double rxs = rdx * sdy - rdy * sdx;
 
-  double ua = ((lx2 - lx1) * (oy - ly1) - (ly2 - ly1) * (ox - lx1)) / denom;
-  double ub = ((rx - ox) * (oy - ly1) - (ry - oy) * (ox - lx1)) / denom;
+  if (fabs(rxs) < EPSILON) return INFINITY;
 
-  if (ua >= 0 - EPSILON && ua <= 1 + EPSILON && ub >= 0 - EPSILON && ub <= 1 + EPSILON) {
-    double dist = ub * R;
+  double t = (qpx * sdy - qpy * sdx) / rxs;
+  double u = (qpx * rdy - qpy * rdx) / rxs;
 
-    if (dist < EPSILON) return 0;
-    return dist;
-  }
+  if (fabs(t) < EPSILON) t = 0.0;
+  if (fabs(u) < EPSILON) u = 0.0;
+  if (fabs(u - 1.0) < EPSILON) u = 1.0;
+
+  if (t >= 0.0 && u >= 0.0 && u <= 1.0) return t;
 
   return INFINITY;
 }
@@ -201,51 +247,36 @@ static void find_intersection_rec(node_t *node, point_t *origin, double angle, d
   find_intersection_rec(node_get_rpt(node), origin, angle, distance_to_barrier);
 }
 
-static polar_coords_t *raycast(bitree_t *active_barriers, point_t *origin, double angle) {
+static polar_coords_t *raycast(bitree_t *active_barriers, point_t *origin, double angle, double min_x, double min_y, double max_x, double max_y) {
+  printf("Ângulo: %.3lf - cos = %f, sin = %f\n", angle * 180/PI, cos(angle), sin(angle));
+
   double distance_to_barrier = INFINITY;
   find_intersection_rec(bt_get_root(active_barriers), origin, angle, &distance_to_barrier);
 
-  if (distance_to_barrier == INFINITY) return polar_init(angle, 16384, origin);
+  double distance_to_bbox = bbox_distance(origin, angle, min_x, min_y, max_x, max_y);
 
-  return polar_init(angle, distance_to_barrier, origin);
+  double distance = fmin(distance_to_barrier, distance_to_bbox);
+
+  return polar_init(angle, distance, origin);
 }
 
-polygon_t *generate_visibility_polygon(llist_t *shapes, llist_t *barriers, point_t *origin) {
+polygon_t *generate_visibility_polygon(llist_t *barriers, point_t *origin) {
   polygon_t *visibility = py_init();
 
-  node_t *current_shape = llist_get_head(shapes);
+  double min_x = 0;
+  double min_y = 0;
+  double max_x = 1024;
+  double max_y = 1024;
 
-  double min_x = shape_get_x(node_get_value(current_shape));
-  double max_x = shape_get_x(node_get_value(current_shape));
-  double min_y = shape_get_y(node_get_value(current_shape));
-  double max_y = shape_get_y(node_get_value(current_shape));
+  line_t *upper_bb = line_init(100100, min_x, min_y, max_x, min_y, "black");
+  line_t *lower_bb = line_init(100101, min_x, max_y, max_x, max_y, "black");
+  line_t *left_bb = line_init(100102, min_x, min_y, min_x, max_y, "black");
+  line_t *right_bb = line_init(100103, max_x, min_y, max_x, max_y, "black");
 
-  // Cálculo de bounding box
-  size_t shapes_len = llist_get_length(shapes);
-  for (size_t i = 0; i < shapes_len; i++) {
-    shape_t *shape = node_get_value(current_shape);
-
-    double shape_x = shape_get_x(shape);
-    double shape_y = shape_get_y(shape);
-
-    if (shape_x < min_x) min_x = shape_x;
-    if (shape_x > max_x) max_x = shape_x;
-    if (shape_y < min_y) min_y = shape_y;
-    if (shape_y > max_y) max_y = shape_y;
-
-    current_shape = node_get_rpt(current_shape);
-  }
-
-  min_x -= 5;
-  max_x += 5;
-  min_y -= 5;
-  max_y += 5;
-
-  // Inserção da bounding box na lista de anteparos
-  llist_insertat_end(barriers, node_init(line_init(0, min_x, min_y, max_x, min_y, NULL), line_destroy));
-  llist_insertat_end(barriers, node_init(line_init(0, min_x, min_y, min_x, max_y, NULL), line_destroy));
-  llist_insertat_end(barriers, node_init(line_init(0, max_x, max_y, max_x, min_y, NULL), line_destroy));
-  llist_insertat_end(barriers, node_init(line_init(0, max_x, max_y, min_x, max_y, NULL), line_destroy));
+  llist_insertat_end(barriers, shape_as_node(shape_init(LINE, upper_bb)));
+  llist_insertat_end(barriers, shape_as_node(shape_init(LINE, lower_bb)));
+  llist_insertat_end(barriers, shape_as_node(shape_init(LINE, left_bb)));
+  llist_insertat_end(barriers, shape_as_node(shape_init(LINE, right_bb)));
 
   size_t angles_len;
   barrier_angle_aux_t *angles = barriers_to_angles(barriers, origin, &angles_len);
@@ -264,36 +295,24 @@ polygon_t *generate_visibility_polygon(llist_t *shapes, llist_t *barriers, point
 
     if (angles[i].is_start && polar_get_angle(angles[i].polar) < EPSILON) continue;
 
-    polar_coords_t *pre_update_point = raycast(active_barriers, origin, polar_get_angle(current->polar));
+    polar_coords_t *pre_update_point = raycast(active_barriers, origin, polar_get_angle(current->polar), min_x, min_y, max_x, max_y);
+    point_t *pre_point = cartesian_from_polar(pre_update_point);
+    py_add_vertex(visibility, pre_point);
+    printf("Ponto: (%.5lf, %.5lf)\n\n", polar_get_absolute_x(pre_update_point), polar_get_absolute_y(pre_update_point));
 
     active_barriers_update(active_barriers, &angles[i]);
 
-    polar_coords_t *post_update_point = raycast(active_barriers, origin, polar_get_angle(current->polar));
+    polar_coords_t *post_update_point = raycast(active_barriers, origin, polar_get_angle(current->polar), min_x, min_y, max_x, max_y);
+    point_t *post_point = cartesian_from_polar(post_update_point);
+    py_add_vertex(visibility, post_point);
+    printf("Ponto: (%.5lf, %.5lf)\n\n", polar_get_absolute_x(post_update_point), polar_get_absolute_y(post_update_point));
 
-    if (fabs(polar_get_distance(pre_update_point) - polar_get_distance(post_update_point)) < EPSILON) {
-      point_t *single_point = cartesian_from_polar(pre_update_point);
-      py_add_vertex(visibility, single_point);
-
-      point_destroy(single_point);
-    } else {
-      point_t *pre_point = cartesian_from_polar(pre_update_point);
-      point_t *post_point = cartesian_from_polar(post_update_point);
-
-      py_add_vertex(visibility, pre_point);
-      py_add_vertex(visibility, post_point);
-
-      point_destroy(pre_point);
-      point_destroy(post_point);
-    }
-
+    point_destroy(pre_point);
+    point_destroy(post_point);
     polar_destroy(pre_update_point);
     polar_destroy(post_update_point);
   }
 
-  // Cleanup
-  for (size_t i = 0; i < 4; i++) {
-    node_destroy(llist_popat_end(barriers));
-  }
 
   for (size_t i = 0; i < angles_len; i++) {
     polar_destroy(angles[i].polar);
@@ -301,6 +320,10 @@ polygon_t *generate_visibility_polygon(llist_t *shapes, llist_t *barriers, point
   free(angles);
 
   bt_destroy(active_barriers);
+
+  for(size_t i = 0; i < 4; i++) {
+    node_destroy(llist_popat_end(barriers));
+  }
 
   return visibility;
 }

@@ -3,6 +3,7 @@
 #include <math.h>
 
 #include "point.h"
+#define PI 3.14159265358979323846
 
 struct point_t {
   double x, y;
@@ -34,7 +35,8 @@ polar_coords_t *polar_init(double angle, double distance, point_t *origin) {
     exit(1);
   }
 
-  if (angle < 0) angle += 2.0 * 3.1415926535;
+  while (angle < 0) angle += 2.0 * PI;
+  while (angle > 2.0 * PI) angle -= 2.0 * PI;
 
   polar->angle = angle;
   polar->distance = distance;
@@ -94,10 +96,11 @@ void polar_set_origin(polar_coords_t *polar, point_t *origin) {
   double absolute_x = polar_get_absolute_x(polar);
   double absolute_y = polar_get_absolute_y(polar);
 
-  double angle = atan2(origin->y - absolute_y, origin->x - absolute_x);
+  double angle = atan2(absolute_y - origin->y, absolute_x - origin->x);
   double distance = sqrt(pow(origin->x - absolute_x, 2) + pow(origin->y - absolute_y, 2));
 
-  if (angle < 0) angle += 2.0 * 3.1415926535;
+  while (angle < 0) angle += 2.0 * PI;
+  while (angle > 2.0 * PI) angle -= 2.0 * PI;
 
   point_t *origin_clone = point_init(origin->x, origin->y);
   free(polar->origin);
@@ -116,10 +119,10 @@ double polar_get_absolute_y(polar_coords_t *polar) {
 }
 
 polar_coords_t *polar_from_cartesian(point_t *origin, point_t *final) {
-  double angle = atan2(origin->y - final->y, origin->x - final->x);
+  double angle = atan2(final->y - origin->y, final->x - origin->x);
   double distance = sqrt(pow(origin->x - final->x, 2) + pow(origin->y - final->y, 2));
 
-  if (angle < 0) angle += 2.0 * 3.1415926535;
+  if (angle < 0) angle += 2.0 * PI;
 
   return polar_init(angle, distance, origin);
 }
