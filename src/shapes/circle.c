@@ -29,11 +29,11 @@ circle_t *circle_init(size_t id, double x, double y, double radius, char *color,
 
   circle->radius = radius;
 
-  char *_color = malloc(sizeof(color) + 1);
+  char *_color = malloc(strlen(color) + 1);
   strcpy(_color, color);
   circle->color = _color;
 
-  char *_border_color = malloc(sizeof(border_color) + 1);
+  char *_border_color = malloc(strlen(border_color) + 1);
   strcpy(_border_color, border_color);
   circle->border_color = _border_color;
 
@@ -66,7 +66,7 @@ void circle_set_radius(circle_t *circle, double radius) {
 void circle_set_color(circle_t *circle, char *color) {
   if (circle->color != NULL) free(circle->color);
  
-  char *_color = malloc(sizeof(color) + 1);
+  char *_color = malloc(strlen(color) + 1);
   strcpy(_color, color);
   circle->color = _color;
 }
@@ -74,7 +74,7 @@ void circle_set_color(circle_t *circle, char *color) {
 void circle_set_border_color(circle_t *circle, char *border_color) {
   if (circle->border_color != NULL) free(circle->border_color);
  
-  char *_border_color = malloc(sizeof(border_color) + 1);
+  char *_border_color = malloc(strlen(border_color) + 1);
   strcpy(_border_color, border_color);
   circle->border_color = _border_color;
 }

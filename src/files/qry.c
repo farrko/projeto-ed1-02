@@ -147,6 +147,8 @@ static void command_a(llist_t *shapes, llist_t *barriers, size_t *highest_id, si
       llist_insertat_end(barriers, popped);
     }
 
+    llist_destroy(new_barriers);
+
     shapes_removed++;
   }
 }
@@ -171,8 +173,9 @@ static void command_d(llist_t *shapes, llist_t *barriers, double x, double y, ch
   }
 
   py_destroy(py);
-  
+  point_destroy(origin);
   llist_destroy(inside_py);
+
   if (svg_get_path(svg_sfx) != svg_get_path(qrysvg)) svg_close(svg_sfx);
 }
 
@@ -197,13 +200,14 @@ static void command_p(llist_t *shapes, llist_t *barriers, double x, double y, ch
     current = node_get_rpt(current);
   }
 
-  py_destroy(py);
-
   for (size_t i = 0; i < ipy_len; i++) {
     llist_insertat_end(shapes, llist_popat_start(inside_py));
   }
-  
+
+  py_destroy(py);
+  point_destroy(origin);
   llist_destroy(inside_py);
+
   if (svg_get_path(svg_sfx) != svg_get_path(qrysvg)) svg_close(svg_sfx);
 }
 
@@ -233,14 +237,14 @@ static void command_cln(llist_t *shapes, llist_t *barriers, double x, double y, 
 
     current = node_get_rpt(current);
   }
-
-  py_destroy(py);
-  
   for (size_t i = 0; i < ipy_len; i++) {
     llist_insertat_end(shapes, llist_popat_start(inside_py));
   }
 
+  py_destroy(py);
+  point_destroy(origin);
   llist_destroy(inside_py);
+
   if (svg_get_path(svg_sfx) != svg_get_path(qrysvg)) svg_close(svg_sfx);
 }
 

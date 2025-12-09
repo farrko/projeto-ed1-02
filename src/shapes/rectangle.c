@@ -29,11 +29,11 @@ rectangle_t *rect_init(size_t id, double x, double y, double width, double heigh
   rectangle->width = width;
   rectangle->height = height;
 
-  char *_color = malloc(sizeof(color) + 1);
+  char *_color = malloc(strlen(color) + 1);
   strcpy(_color, color);
   rectangle->color = _color;
 
-  char *_border_color = malloc(sizeof(border_color) + 1);
+  char *_border_color = malloc(strlen(border_color) + 1);
   strcpy(_border_color, border_color);
   rectangle->border_color = _border_color;
 
@@ -70,7 +70,7 @@ void rect_set_height(rectangle_t *rect, double height) {
 void rect_set_color(rectangle_t *rect, char *color) {
   if (rect->color != NULL) free(rect->color);
  
-  char *_color = malloc(sizeof(color) + 1);
+  char *_color = malloc(strlen(color) + 1);
   strcpy(_color, color);
   rect->color = _color;
 }
@@ -78,7 +78,7 @@ void rect_set_color(rectangle_t *rect, char *color) {
 void rect_set_border_color(rectangle_t *rect, char *border_color) {
   if (rect->border_color != NULL) free(rect->border_color);
  
-  char *_border_color = malloc(sizeof(border_color) + 1);
+  char *_border_color = malloc(strlen(border_color) + 1);
   strcpy(_border_color, border_color);
   rect->border_color = _border_color;
 }

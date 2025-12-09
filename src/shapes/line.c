@@ -28,7 +28,7 @@ line_t *line_init(size_t id, double x1, double y1, double x2, double y2, char *c
   point_t *p2 = point_init(x2, y2);
   line->p2 = p2;
  
-  char *_color = malloc(sizeof(color) + 1);
+  char *_color = malloc(strlen(color) + 1);
   strcpy(_color, color);
   line->color = _color;
 
@@ -68,7 +68,7 @@ void line_set_y2(line_t *line, double y2) {
 void line_set_color(line_t *line, char *color) {
   if (line->color != NULL) free(line->color);
   
-  char *_color = malloc(sizeof(color) + 1);
+  char *_color = malloc(strlen(color) + 1);
   strcpy(_color, color);
   line->color = _color;
 }
