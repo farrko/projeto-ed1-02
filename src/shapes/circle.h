@@ -20,11 +20,15 @@ typedef struct circle_t circle_t;
   */
 circle_t *circle_init(size_t id, double x, double y, double radius, char *color, char *border_color);
 
+
+
 /** @brief    Destrói um círculo.
   *
   * @param    circle  Uma instância de círculo.
   */
 void circle_destroy(void *circle);
+
+
 
 /** @brief    Define o X de um círculo.
   *
@@ -33,12 +37,16 @@ void circle_destroy(void *circle);
   */
 void circle_set_x(circle_t *circle, double x);
 
+
+
 /** @brief    Define o Y de um círculo.
   *
   * @param    circle  Uma instância de círculo.
   * @param    y       Coordenada Y do centro.
   */
 void circle_set_y(circle_t *circle, double y);
+
+
 
 /** @brief    Define o raio de um círculo.
   *
@@ -47,6 +55,8 @@ void circle_set_y(circle_t *circle, double y);
   */
 void circle_set_radius(circle_t *circle, double radius);
 
+
+
 /** @brief    Define a cor de preenchimento de um círculo.
   *
   * @param    circle  Uma instância de círculo.
@@ -54,12 +64,16 @@ void circle_set_radius(circle_t *circle, double radius);
   */
 void circle_set_color(circle_t *circle, char *color);
 
+
+
 /** @brief    Define a cor da borda de um círculo.
   *
   * @param    circle        Uma instância de círculo.
   * @param    border_color  String com o código HEX da cor da borda.
   */
 void circle_set_border_color(circle_t *circle, char *border_color);
+
+
 
 /** @brief    Retorna o ID de um círculo.
   *
@@ -69,7 +83,17 @@ void circle_set_border_color(circle_t *circle, char *border_color);
   */
 size_t circle_get_id(circle_t *circle);
 
+
+
+/** @brief    Obtém o ponto de origem (centro) de um círculo.
+  *
+  * @param    circle Pointer para um círculo.
+  *
+  * @return   O ponto que representa o centro do círculo.
+  */
 point_t *circle_get_origin(circle_t *circle);
+
+
 
 /** @brief    Retorna o X de um círculo.
   *
@@ -79,6 +103,8 @@ point_t *circle_get_origin(circle_t *circle);
   */
 double circle_get_x(circle_t *circle);
 
+
+
 /** @brief    Retorna o Y de um círculo.
   *
   * @param    circle  Uma instância de círculo.
@@ -86,6 +112,8 @@ double circle_get_x(circle_t *circle);
   * @return   O Y do centro do círculo.
   */
 double circle_get_y(circle_t *circle);
+
+
 
 /** @brief    Retorna o raio de um círculo.
   *
@@ -95,6 +123,8 @@ double circle_get_y(circle_t *circle);
   */
 double circle_get_radius(circle_t *circle);
 
+
+
 /** @brief    Retorna a cor de preenchimento de um círculo.
   *
   * @param    circle  Uma instância de círculo.
@@ -102,6 +132,8 @@ double circle_get_radius(circle_t *circle);
   * @return   Uma string com a cor de preenchimento do círculo.
   */
 char *circle_get_color(circle_t *circle);
+
+
 
 /** @brief    Retorna a cor da borda de um círculo.
   *
@@ -111,6 +143,8 @@ char *circle_get_color(circle_t *circle);
   */
 char *circle_get_border_color(circle_t *circle);
 
+
+
 /** @brief    Retorna a área de um círculo.
   *
   * @param    circle  Uma instância de círculo.
@@ -118,6 +152,8 @@ char *circle_get_border_color(circle_t *circle);
   * @return   A área do círculo.
   */
 double circle_get_area(circle_t *circle);
+
+
 
 /** @brief    Cria uma cópia de um círculo com um novo identificador.
   *
@@ -128,6 +164,8 @@ double circle_get_area(circle_t *circle);
   * @warning  Em caso de erro na alocação de memória, o programa será encerrado.
   */
 circle_t *circle_clone(circle_t *circle, size_t id);
+
+
 
 /** @brief    Troca entre si as cores de preenchimento e de borda de um círculo.
   *

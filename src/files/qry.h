@@ -11,6 +11,8 @@
   * @param    shapes      Uma linked list que contém formas que serão utilizadas pelo arquivo .qry.
   * @param    highest_id  O id mais alto registrado no processamento do arquivo .geo, para ser utilizado na clonagem de formas.
   * @param    qrysvg      Path para o svg do arquivo .qry (utilizado para exibir o polígono)
+  * @param    sort_type   O algoritmo de sorting a ser utilizado (ver visibility.h)
+  * @param    threshold   Valor a ser utilizado como threshold para o mixed mergesort (ver sorting.h)
   *
   * @warning  A fila "ground" será modificada ao longo da execução da função.
   */

@@ -139,4 +139,4 @@ void llist_insertat_end(llist_t *llist, node_t *node);
   */
 void llist_destroyat(llist_t *llist, size_t index);
 
-#endif // !LINKEDLIST_H
+#endif

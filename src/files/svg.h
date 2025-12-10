@@ -18,13 +18,25 @@ typedef struct svg_t svg_t;
   */
 svg_t *svg_init(char *path);
 
+
+
 /** @brief    Fecha o arquivo SVG e libera os recursos associados.
   *
   * @param    svg    Uma instância de svg.
   */
 void svg_close(svg_t *svg);
 
+
+
+/** @brief    Obtém o caminho do arquivo associado ao SVG.
+  *
+  * @param    svg   Uma instância de svg.
+  *
+  * @return   Uma string contendo o path do arquivo SVG.
+  */
 char *svg_get_path(svg_t *svg);
+
+
 
 /** @brief    Escreve um círculo no arquivo SVG.
   *
@@ -33,12 +45,16 @@ char *svg_get_path(svg_t *svg);
   */
 void svg_write_circle(svg_t *svg, circle_t *circle);
 
+
+
 /** @brief    Escreve um retângulo no arquivo SVG.
   *
   * @param    svg       Uma instância de svg.
   * @param    rect      A forma de retângulo a ser escrita.
   */
 void svg_write_rectangle(svg_t *svg, rectangle_t *rect);
+
+
 
 /** @brief    Escreve uma linha no arquivo SVG.
   *
@@ -47,6 +63,8 @@ void svg_write_rectangle(svg_t *svg, rectangle_t *rect);
   */
 void svg_write_line(svg_t *svg, line_t *line);
 
+
+
 /** @brief    Escreve um texto no arquivo SVG.
   *
   * @param    svg       Uma instância de svg.
@@ -54,7 +72,16 @@ void svg_write_line(svg_t *svg, line_t *line);
   */
 void svg_write_text(svg_t *svg, text_t *text);
 
+
+
+/** @brief    Escreve um polígono em um arquivo SVG.
+  *
+  * @param    svg Pointer para a estrutura SVG onde o polígono será escrito.
+  * @param    py  Polígono a ser desenhado no SVG.
+  */
 void svg_write_polygon(svg_t *svg, polygon_t *py);
+
+
 
 /** @brief    Escreve todas as formas contidas em uma linked list no arquivo SVG.
   *
