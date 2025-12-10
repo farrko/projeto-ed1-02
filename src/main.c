@@ -12,8 +12,8 @@ int main(int argc, char **argv) {
   char *geopath = NULL;
   char *out_dir = NULL;
   char *qrypath = NULL;
-  char *to = "q";
-  int threshold = 10;
+  char *sort_type = "q";
+  size_t threshold = 10;
 
   for (int i = 0; i < argc; i++) {
     if (strcmp(argv[i], "-e") == 0) {
@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
     }
 
     if (strcmp(argv[i], "-to") == 0) {
-      to = argv[i + 1];
+      sort_type = argv[i + 1];
     }
 
     if (strcmp(argv[i], "-i") == 0) {
@@ -105,7 +105,7 @@ int main(int argc, char **argv) {
 
   svg_t *qrysvg = svg_init(outpath_svg);
 
-  qry_processing(full_qrypath, outpath_txt, shapes_list, highest_id, qrysvg);
+  qry_processing(full_qrypath, outpath_txt, shapes_list, highest_id, qrysvg, sort_type, threshold);
 
   svg_write_llist(qrysvg, shapes_list);
   svg_close(qrysvg);

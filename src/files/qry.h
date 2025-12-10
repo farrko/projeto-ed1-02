@@ -14,6 +14,6 @@
   *
   * @warning  A fila "ground" será modificada ao longo da execução da função.
   */
-void qry_processing(char *qrypath, char *txtpath, llist_t *shapes, size_t highest_id, svg_t *qrysvg);
+void qry_processing(char *qrypath, char *txtpath, llist_t *shapes, size_t highest_id, svg_t *qrysvg, char *sort_type, size_t threshold);
 
 #endif

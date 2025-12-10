@@ -6,7 +6,7 @@ SRC_DIR := .
 BUILD_DIR := build
 BIN := ted
 
-SRC_FILES := $(shell find $(SRC_DIR) -name '*.c')
+SRC_FILES := $(shell find $(SRC_DIR) -name '*.c' | grep -v tests)
 
 OBJ_FILES := $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SRC_FILES))
 

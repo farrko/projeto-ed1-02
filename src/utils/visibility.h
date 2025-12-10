@@ -5,6 +5,6 @@
 #include "../datast/linkedlist.h"
 #include "../shapes/point.h"
 
-polygon_t *generate_visibility_polygon(llist_t *barriers, point_t *origin);
+polygon_t *generate_visibility_polygon(llist_t *barriers, point_t *origin, char sort_type, size_t threshold);
 
 #endif

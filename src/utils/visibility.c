@@ -7,6 +7,7 @@
 
 #include "../datast/linkedlist.h"
 #include "../datast/binary_tree.h"
+#include "sorting.h"
 
 #define EPSILON 1e-12
 #define PI 3.14159265358979323846
@@ -260,7 +261,7 @@ static polar_coords_t *raycast(bitree_t *active_barriers, point_t *origin, doubl
   return polar_init(angle, distance, origin);
 }
 
-polygon_t *generate_visibility_polygon(llist_t *barriers, point_t *origin) {
+polygon_t *generate_visibility_polygon(llist_t *barriers, point_t *origin, char sort_type, size_t threshold) {
   polygon_t *visibility = py_init();
 
   double min_x = 0;
@@ -281,7 +282,9 @@ polygon_t *generate_visibility_polygon(llist_t *barriers, point_t *origin) {
   size_t angles_len;
   barrier_angle_aux_t *angles = barriers_to_angles(barriers, origin, &angles_len);
 
-  qsort(angles, angles_len, sizeof(barrier_angle_aux_t), cmp_baa);
+  if (sort_type == 'q') {
+    qsort(angles, angles_len, sizeof(barrier_angle_aux_t), cmp_baa);
+  } else mixed_mergesort(angles, angles_len, sizeof(barrier_angle_aux_t), cmp_baa, threshold);
 
   bitree_t *active_barriers = bt_init(NULL, cmp_active_barriers);
 
