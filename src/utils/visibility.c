@@ -125,8 +125,6 @@ static barrier_angle_aux_t *barriers_to_angles(llist_t *barriers, point_t *origi
     a1 = polar_get_angle(b_p1_p);
     a2 = polar_get_angle(b_p2_p);
 
-    printf("Barreira %zu - ângulo do primeiro ponto: %.3lf, ângulo do segundo ponto: %.3lf\n", line_get_id(barrier), a1 * 180/PI, a2 * 180/PI);
-
     double distance = static_distance_to_barrier(barrier, origin);
 
     if (a1 > a2) {
@@ -190,14 +188,11 @@ static void active_barriers_update(bitree_t *active_barriers, barrier_angle_aux_
       exit(1);
     }
 
-    printf("Nova barreira inserida na árvore: id = %zu\n", line_get_id(baa->barrier));
-
     new_ab->barrier = baa->barrier;
     new_ab->distance = baa->static_distance_to_barrier;
     bt_insert_node(active_barriers, node_init(new_ab, free));
   } else {
     active_barrier_t b = { baa->barrier, baa->static_distance_to_barrier };
-    printf("Barreira removida da árvore: id = %zu\n", line_get_id(baa->barrier));
     bt_remove_node(active_barriers, &b);
   }
 }
@@ -249,8 +244,6 @@ static void find_intersection_rec(node_t *node, point_t *origin, double angle, d
 }
 
 static polar_coords_t *raycast(bitree_t *active_barriers, point_t *origin, double angle, double min_x, double min_y, double max_x, double max_y) {
-  printf("Ângulo: %.3lf - cos = %f, sin = %f\n", angle * 180/PI, cos(angle), sin(angle));
-
   double distance_to_barrier = INFINITY;
   find_intersection_rec(bt_get_root(active_barriers), origin, angle, &distance_to_barrier);
 
@@ -301,14 +294,12 @@ polygon_t *generate_visibility_polygon(llist_t *barriers, point_t *origin, char 
     polar_coords_t *pre_update_point = raycast(active_barriers, origin, polar_get_angle(current->polar), min_x, min_y, max_x, max_y);
     point_t *pre_point = cartesian_from_polar(pre_update_point);
     py_add_vertex(visibility, pre_point);
-    printf("Ponto: (%.5lf, %.5lf)\n\n", polar_get_absolute_x(pre_update_point), polar_get_absolute_y(pre_update_point));
 
     active_barriers_update(active_barriers, &angles[i]);
 
     polar_coords_t *post_update_point = raycast(active_barriers, origin, polar_get_angle(current->polar), min_x, min_y, max_x, max_y);
     point_t *post_point = cartesian_from_polar(post_update_point);
     py_add_vertex(visibility, post_point);
-    printf("Ponto: (%.5lf, %.5lf)\n\n", polar_get_absolute_x(post_update_point), polar_get_absolute_y(post_update_point));
 
     point_destroy(pre_point);
     point_destroy(post_point);

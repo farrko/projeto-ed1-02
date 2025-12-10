@@ -326,8 +326,6 @@ void qry_processing(char *qrypath, char *txtpath, llist_t *shapes, size_t highes
       sscanf(str, "%*s %zu %zu %c", &i, &j, &seg_orientation);
       fprintf(txt, "a %zu %zu %c\n", i, j, seg_orientation);
 
-      printf("a %zu %zu %c\n", i, j, seg_orientation);
-
       command_a(shapes, barriers, &highest_id, i, j, seg_orientation, txt);
     }
 
@@ -338,8 +336,6 @@ void qry_processing(char *qrypath, char *txtpath, llist_t *shapes, size_t highes
 
       sscanf(str, "%*s %lf %lf %s", &x, &y, sfx);
       fprintf(txt, "d %lf %lf %s\n", x, y, sfx);
-
-      printf("d %lf %lf %s\n", x, y, sfx);
 
       command_d(shapes, barriers, x, y, sfx, txt, qrysvg, st, threshold);
 
@@ -355,8 +351,6 @@ void qry_processing(char *qrypath, char *txtpath, llist_t *shapes, size_t highes
       sscanf(str, "%*s %lf %lf %s %s", &x, &y, color, sfx);
       fprintf(txt, "p %lf %lf %s %s\n", x, y, color, sfx);
 
-      printf("p %lf %lf %s %s\n", x, y, color, sfx);
-
       command_p(shapes, barriers, x, y, color, sfx, txt, qrysvg, st, threshold);
 
       free(color);
@@ -370,8 +364,6 @@ void qry_processing(char *qrypath, char *txtpath, llist_t *shapes, size_t highes
 
       sscanf(str, "%*s %lf %lf %lf %lf %s", &x, &y, &dx, &dy, sfx);
       fprintf(txt, "cln %lf %lf %lf %lf %s\n", x, y, dx, dy, sfx);
-
-      printf("cln %lf %lf %lf %lf %s\n", x, y, dx, dy, sfx);
 
       command_cln(shapes, barriers, x, y, dx, dy, sfx, &highest_id, txt, qrysvg, st, threshold);
 
